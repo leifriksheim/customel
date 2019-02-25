@@ -11,10 +11,10 @@ Customel is under development. Don't use in production yet.
 
 > A tiny wrapper function to simplify the creation of Custom Elements/Web Components.
 
-- **Lightweight 🕊️** Customel is only a small wrapper around the HTMLElement Class, and consists of around 180 lines of code.
-- **Intuitive 💡** Create your custom elements with familiar concepts borrowed from UI-libraries like React and Vue.
+- **Lightweight 🕊️** Customel is a small wrapper around the HTMLElement Class, and consists of around 180 LOC.
+- **Intuitive 💡** Create custom elements with familiar concepts borrowed from UI-libraries like React and Vue.
 - **Fast rendering ⚡️** Customel uses lighterhtml as the rendering engine for fast DOM-updates.
-- **Integrates with frameworks 💬** Create a pattern library with Customel, and use them with React/Vue/Angular/etc.
+- **Integrates with frameworks 💬** Create a pattern library with Customel, and use them with your favourite framework.
 
 ## Installation
 
