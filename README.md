@@ -5,11 +5,11 @@
 <a href="https://www.npmjs.com/package/customel"><img src="https://img.shields.io/npm/l/customel.svg" alt="License"></a>
 </p>
 
-<aside class="notice">
+```
 Customel is under development. Don't use in production yet.
-</aside>
+```
 
-Customel is a tiny wrapper function to simplify the creation of Custom Elements/Web Components.
+> A tiny wrapper function to simplify the creation of Custom Elements/Web Components.
 
 - **Ligghtweight:** Customel is only a small wrapper around the HTMLElement Class, and consists of around 180 lines of code.
 - **Intuitive:** Create your custom elements with familiar concepts borrowed from UI-libraries like React and Vue.
