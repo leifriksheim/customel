@@ -1,0 +1,16 @@
+{
+  "name": "customel",
+  "version": "0.0.0",
+  "description": "A tiny wrapper function to simplify the creation of Custom Elements/Web Components.",
+  "main": "index.js",
+  "directories": {
+    "example": "examples",
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
