@@ -22,7 +22,7 @@ You can use Customel as a `<script>` tag from a [CDN](https://unkpg.com/customel
 
 ## Documentation
 
-To create a Custom Element initiate a new Customel:
+To create a new element – initiate a new Customel:
 
 ```javascript
 // my-element.js
