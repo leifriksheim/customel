@@ -1,6 +1,10 @@
 ![Customel](media/logo.png)
 
 <p align="center">
+  <h1>Customel</h1>
+</p>
+
+<p align="center">
   <a href="https://www.npmjs.com/package/customel"><img src="https://img.shields.io/npm/v/customel.svg" alt="Version"></a>
   <a href="https://www.npmjs.com/package/customel"><img src="https://img.shields.io/npm/l/customel.svg" alt="License"></a>
 </p>
