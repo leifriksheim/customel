@@ -8,9 +8,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "publish": "np",
     "clean": "rimraf dist",
-    "build": "run-s clean && run-p build:es build:cjs",
+    "build": "run-s clean && run-p build:es build:iife",
     "build:es": "NODE_ENV=es rollup -c",
-    "build:cjs": "NODE_ENV=cjs rollup -c",
+    "build:iife": "NODE_ENV=iife rollup -c",
     "precommit": "lint-staged"
   },
   "files": [

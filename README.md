@@ -18,7 +18,32 @@ Customel is under development. Don't use in production yet.
 
 ## Installation
 
-You can use Customel as a `<script>` tag from a [CDN](https://unkpg.com/customel@latest), or as a `customel` package on [npm](https://www.npmjs.com/customel).
+The easiest way to try out Customel is using the JSFiddle Hello World example.
+Or, you can create an index.html file and include Customel with:
+
+```html
+<script src="https://unpkg.com/customel"></script>
+```
+
+### CDN:
+
+```html
+<script src="https://unpkg.com/customel"></script>
+```
+
+If you are using native ES Modules, there is also an ES Modules compatible build:
+
+```html
+<script type="module">
+  import Customel from "//unpkg.com/customel?module";
+</script>
+```
+
+### NPM:
+
+```
+npm install customel
+```
 
 ## Documentation
 
@@ -26,6 +51,8 @@ To create a new element – initiate a new Customel:
 
 ```javascript
 // my-element.js
+
+import Customel from "//unpkg.com/customel?module";
 
 new Customel({
   tag: "my-element",
@@ -43,8 +70,7 @@ The Component will automatically get registered as a Custom Element:
 <!--  index.html --->
 <html>
   <head>
-    <script src="https://unkpg.com/customel"></script>
-    <script src="my-element.js"></script>
+    <script type="module" src="my-element.js"></script>
   </head>
   <body>
     <my-element></my-element>

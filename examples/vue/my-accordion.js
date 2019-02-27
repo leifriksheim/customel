@@ -1,6 +1,6 @@
-import MyComponent from "../../dist/index.es.js";
+import Customel from "../../dist/index.es.js";
 
-new MyComponent({
+new Customel({
   tag: "my-accordion",
   props: {
     items: [{ title: "Initial", content: "Initial" }]

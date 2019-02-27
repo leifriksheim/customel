@@ -9,9 +9,10 @@ export default {
   output: {
     file: {
       es: pkg.module,
-      cjs: pkg.main
+      iife: pkg.main
     }[env],
-    format: env
+    format: env,
+    name: pkg.name
   },
   external: ["react", "styled-components"],
   plugins: [
