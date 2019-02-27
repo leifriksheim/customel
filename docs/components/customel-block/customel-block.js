@@ -1,8 +1,8 @@
-import MyComponent from "../../../../dist/index.es.js";
+import MyComponent from "../../../dist/index.es.js";
 import getStyles from "./styles.js";
 
 new MyComponent({
-  tag: "my-block",
+  tag: "customel-block",
   props: {
     p: 0,
     py: 0,
@@ -18,7 +18,7 @@ new MyComponent({
     mr: 0,
     mt: 0,
     mb: 0,
-    backgroundColor: "#eee",
+    backgroundColor: "#fff",
     textAlign: "left",
     justifyContent: "auto",
     alignItems: "auto"

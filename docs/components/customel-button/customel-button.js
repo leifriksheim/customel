@@ -1,8 +1,8 @@
-import MyComponent from "../../../../dist/index.es.js";
+import MyComponent from "../../../dist/index.es.js";
 import getStyles from "./styles.js";
 
 new MyComponent({
-  tag: "my-button",
+  tag: "customel-button",
   props: {
     full: false,
     primary: false

@@ -1,3 +1,5 @@
+import { html, render as lighterRender } from "lighterhtml";
+
 export default function Component({
   tag = "my-element",
   props = {},
@@ -32,10 +34,9 @@ export default function Component({
       this._initActions();
 
       // render
-      this.engine = lighterhtml.html.bind(this);
+      this.engine = html.bind(this);
       this.html = render.bind(this);
-
-      this.render = lighterhtml.render.bind(
+      this.render = lighterRender.bind(
         this,
         this.attachShadow({ mode: "closed" }),
         this.render
@@ -105,7 +106,7 @@ export default function Component({
     }
 
     connectedCallback() {
-      // upggrade prop if it's already set by a framework for instance
+      // upgrade prop if it's already set by a framework for instance
       Object.keys(this.props).forEach(prop => {
         this._upradeProperty(prop, this.prototype);
       });
@@ -134,8 +135,7 @@ export default function Component({
     }
 
     render() {
-      console.log("render");
-      return lighterhtml.html`
+      return this.engine`
         <style>
         ${this.styles()}
         </style>

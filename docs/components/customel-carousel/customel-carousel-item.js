@@ -1,8 +1,8 @@
-import MyComponent from "../../../../dist/index.es.js";
+import MyComponent from "../../../dist/index.es.js";
 import { carouselItemStyles } from "./styles.js";
 
 new MyComponent({
-  tag: "my-carousel-item",
+  tag: "customel-carousel-item",
   styles() {
     return carouselItemStyles(this.props);
   },

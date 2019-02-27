@@ -1,4 +1,4 @@
-import MyComponent from "../../index.js";
+import MyComponent from "../../dist/index.es.js";
 
 new MyComponent({
   tag: "my-accordion",

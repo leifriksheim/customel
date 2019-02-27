@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <script src="./components/index.js" type="module"></script>
+    <title>Customel</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        font-family: Arial;
+      }
+    </style>
+  </head>
+  <body>
+    <customel-layout>
+      <aside name="sidebar">
+        <h1>Customel</h1>
+        <customel-toc>
+          <customel-block my="1">
+            <customel-link to="#intro">Introduction</customel-link>
+          </customel-block>
+          <customel-block my="1">
+            <customel-link to="#installation">Installation</customel-link>
+          </customel-block>
+        </customel-toc>
+      </aside>
+      <div>Halla</div>
+    </customel-sidebar>
+
+    <script>
+
+    async function fetchContent(url) {
+      try {
+        const res = await fetch(url);
+      } catch (e) {
+        console.log('error', e)
+      }
+    }
+
+    fetchContent(window.origin + '/docs/docs.md');
+
+    </script>
+
+  </body>
+</html>
