@@ -18,14 +18,9 @@ Customel is under development. Don't use in production yet.
 
 ## Installation
 
-The easiest way to try out Customel is using the JSFiddle Hello World example.
-Or, you can create an index.html file and include Customel with:
+The easiest way to try out Customel is using the [JSFiddle Hello World example](https://jsfiddle.net/waysofperception/zp2rd7s5/8/).
 
-```html
-<script src="https://unpkg.com/customel"></script>
-```
-
-### CDN:
+Or, you can create an index.html file and include Customel with our CDN:
 
 ```html
 <script src="https://unpkg.com/customel"></script>
