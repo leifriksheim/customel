@@ -1641,7 +1641,7 @@ function Component({
   state = {},
   actions = {},
   mounted = () => {},
-  propChange = () => {},
+  propChanged = () => {},
   render: render$1 = () => {},
   styles = () => ""
 }) {
@@ -1652,7 +1652,7 @@ function Component({
       this.props = props;
       this.propTypes = {};
       this._initProps = this._initProps.bind(this);
-      this.propChange = propChange.bind(this);
+      this.propChanged = propChanged.bind(this);
 
       this._initProps(); // state
 
@@ -1729,7 +1729,7 @@ function Component({
             } // notify component
 
 
-            this.propChange(prop, oldVal, newVal);
+            this.propChanged(prop, oldVal, newVal);
           }
 
         });
@@ -1757,7 +1757,7 @@ function Component({
         this.props[attr] = newVal;
         this.render(); // notify component
 
-        this.propChange(attr, oldVal, newVal);
+        this.propChanged(attr, oldVal, newVal);
       }
     }
 
@@ -1789,7 +1789,7 @@ function Component({
 }
 
 function typeCast(value, type, attr) {
-  const actualType = typeof value;
+  const actualType = typeOf(value);
 
   if (type === "boolean") {
     if (value === "true" || "false") {
@@ -1811,7 +1811,12 @@ function typeCast(value, type, attr) {
     return String(value);
   }
 
+  return value;
   console.error(`Attributes can only be primitives. "${attr}" with value ${value} is not a primitive.`);
+}
+
+function typeOf(value) {
+  return Object.prototype.toString.call(value).slice(8, -1).toLowerCase();
 }
 
 export default Component;

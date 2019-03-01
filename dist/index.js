@@ -1644,7 +1644,7 @@ var customel = (function () {
     state = {},
     actions = {},
     mounted = () => {},
-    propChange = () => {},
+    propChanged = () => {},
     render: render$1 = () => {},
     styles = () => ""
   }) {
@@ -1655,7 +1655,7 @@ var customel = (function () {
         this.props = props;
         this.propTypes = {};
         this._initProps = this._initProps.bind(this);
-        this.propChange = propChange.bind(this);
+        this.propChanged = propChanged.bind(this);
 
         this._initProps(); // state
 
@@ -1732,7 +1732,7 @@ var customel = (function () {
               } // notify component
 
 
-              this.propChange(prop, oldVal, newVal);
+              this.propChanged(prop, oldVal, newVal);
             }
 
           });
@@ -1760,7 +1760,7 @@ var customel = (function () {
           this.props[attr] = newVal;
           this.render(); // notify component
 
-          this.propChange(attr, oldVal, newVal);
+          this.propChanged(attr, oldVal, newVal);
         }
       }
 
@@ -1792,7 +1792,7 @@ var customel = (function () {
   }
 
   function typeCast(value, type, attr) {
-    const actualType = typeof value;
+    const actualType = typeOf(value);
 
     if (type === "boolean") {
       if (value === "true" || "false") {
@@ -1814,7 +1814,12 @@ var customel = (function () {
       return String(value);
     }
 
+    return value;
     console.error(`Attributes can only be primitives. "${attr}" with value ${value} is not a primitive.`);
+  }
+
+  function typeOf(value) {
+    return Object.prototype.toString.call(value).slice(8, -1).toLowerCase();
   }
 
   return Component;

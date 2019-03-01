@@ -1,15 +1,18 @@
-import { html, render as lighterRender } from "lighterhtml";
-
 export default function Component({
   tag = "my-element",
   props = {},
   state = {},
   actions = {},
   mounted = () => {},
-  propChanged = () => {},
+  propChange = () => {},
   render = () => {},
+  events = {},
   styles = () => ""
 }) {
+  const styleNode = document.createElement("style");
+  const templateNode = document.createElement("template");
+  templateNode.innerHTML = "<div></div>";
+
   class MyComponent extends HTMLElement {
     constructor() {
       super();
@@ -18,7 +21,7 @@ export default function Component({
       this.props = props;
       this.propTypes = {};
       this._initProps = this._initProps.bind(this);
-      this.propChanged = propChanged.bind(this);
+      this.propChange = propChange.bind(this);
       this._initProps();
 
       // state
@@ -34,13 +37,17 @@ export default function Component({
       this._initActions();
 
       // render
-      this.engine = html.bind(this);
-      this.html = render.bind(this);
-      this.render = lighterRender.bind(
-        this,
-        this.attachShadow({ mode: "closed" }),
-        this.render
-      );
+      this._shadowRoot = this.attachShadow({ mode: "closed" });
+      this._shadowRoot.appendChild(styleNode);
+      this._shadowRoot.appendChild(templateNode.content.cloneNode(true));
+      this._templateRoot = this._shadowRoot.querySelector("div");
+      this._styleRoot = this._shadowRoot.querySelector("style");
+      this.render = this.render.bind(this);
+      this.getHtml = render.bind(this);
+
+      // events
+      this.events = events;
+      this._initEvents = this._initEvents.bind(this);
 
       // mounted
       this.mounted = mounted.bind(this);
@@ -57,6 +64,22 @@ export default function Component({
         const value = typeCast(rawValue, type, p);
         this.props[p] = value;
         this.propTypes[p] = type;
+      });
+    }
+
+    _initEvents() {
+      Object.keys(this.events).map(selector => {
+        const nodes = [...this._templateRoot.querySelectorAll(selector)];
+        Object.keys(this.events[selector]).map(eventType => {
+          nodes.forEach(node => {
+            const callBack = this.events[selector][eventType].bind(this);
+            const key = node.getAttribute("key");
+
+            node.addEventListener(eventType, e => {
+              callBack(e, key);
+            });
+          });
+        });
       });
     }
 
@@ -97,7 +120,7 @@ export default function Component({
               }
             }
             // notify component
-            this.propChanged(prop, oldVal, newVal);
+            this.propChange(prop, oldVal, newVal);
           }
         });
       });
@@ -130,17 +153,14 @@ export default function Component({
         this.props[attr] = newVal;
         this.render();
         // notify component
-        this.propChanged(attr, oldVal, newVal);
+        this.propChange(attr, oldVal, newVal);
       }
     }
 
     render() {
-      return this.engine`
-        <style>
-        ${this.styles()}
-        </style>
-        ${this.html(this.engine)}
-      `;
+      this._styleRoot.innerHTML = this.styles();
+      this._templateRoot.innerHTML = this.getHtml();
+      this._initEvents();
     }
 
     setState(newState) {
@@ -157,7 +177,7 @@ export default function Component({
 }
 
 function typeCast(value, type, attr) {
-  const actualType = typeOf(value);
+  const actualType = typeof value;
 
   if (type === "boolean") {
     if (value === "true" || "false") {
@@ -177,16 +197,7 @@ function typeCast(value, type, attr) {
     return String(value);
   }
 
-  return value;
-
   console.error(
     `Attributes can only be primitives. "${attr}" with value ${value} is not a primitive.`
   );
-}
-
-function typeOf(value) {
-  return Object.prototype.toString
-    .call(value)
-    .slice(8, -1)
-    .toLowerCase();
 }

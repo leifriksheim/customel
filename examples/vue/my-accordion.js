@@ -17,6 +17,7 @@ new Customel({
         border-bottom: 1px solid #eee;
       }
       summary {
+        position: relative;
         font-weight: bold;
         cursor: pointer;
         outline: 0;
@@ -29,9 +30,31 @@ new Customel({
         padding: 10px;
       }
       summary::-webkit-details-marker {
+        display: none;
+      }
+      summary:before {
+        content: "";
+        display: block;
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        width: 10px;
+        height: 10px;
+        border-left: 1px solid black;
+        border-top: 1px solid black;
+        transform: rotate(-135deg);
+        transform-origin: 50% 50%;
+      }
+      details[open] summary:before {
+        transform: rotate(45deg);
 
       }
     `;
+  },
+  actions: {
+    showAlert() {
+      alert("halla");
+    }
   },
   render: function(html) {
     const { items } = this.props;
@@ -39,7 +62,7 @@ new Customel({
     return html`
       <div>
         ${items.map(
-          item => html`
+          (item, index) => html`
             <details>
               <summary>
                 ${item.title}

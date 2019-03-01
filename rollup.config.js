@@ -12,7 +12,7 @@ export default {
       iife: pkg.main
     }[env],
     format: env,
-    name: pkg.name
+    name: "Customel"
   },
   external: ["react", "styled-components"],
   plugins: [
