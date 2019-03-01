@@ -1,6 +1,6 @@
 {
   "name": "customel",
-  "version": "0.0.1-0",
+  "version": "0.0.1",
   "description": "A tiny wrapper function to simplify the creation of Custom Elements/Web Components.",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
