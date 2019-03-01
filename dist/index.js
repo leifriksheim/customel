@@ -1,4 +1,4 @@
-var customel = (function () {
+var Customel = (function () {
   'use strict';
 
   /*! (c) Andrea Giammarchi - ISC */
@@ -1789,6 +1789,7 @@ var customel = (function () {
     }
 
     customElements.define(tag, MyComponent);
+    return MyComponent;
   }
 
   function typeCast(value, type, attr) {

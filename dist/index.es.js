@@ -1786,6 +1786,7 @@ function Component({
   }
 
   customElements.define(tag, MyComponent);
+  return MyComponent;
 }
 
 function typeCast(value, type, attr) {
