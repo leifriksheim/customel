@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <script src="my-accordion.js" type="module"></script>
+    <title>Document</title>
+  </head>
+  <body>
+    <div style="max-width: 800px; margin: 0 auto;">
+      <my-accordion></my-accordion>
+    </div>
+    <script>
+      document.querySelector("my-accordion").items = [
+        { title: "New", content: "New" },
+        { title: "New", content: "New" }
+      ];
+    </script>
+  </body>
+</html>

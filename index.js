@@ -2,6 +2,7 @@ import { html, render as lighterRender } from "lighterhtml";
 
 export default function Component({
   tag = "my-element",
+  mode = "closed",
   props = {},
   state = {},
   actions = {},
@@ -38,7 +39,7 @@ export default function Component({
       this.html = render.bind(this);
       this.render = lighterRender.bind(
         this,
-        this.attachShadow({ mode: "closed" }),
+        this.attachShadow({ mode: mode }),
         this.render
       );
 
@@ -51,22 +52,27 @@ export default function Component({
 
     _initProps() {
       Object.keys(this.props).map(p => {
-        const type = typeof this.props[p];
-        const rawValue =
-          this.getAttribute(p) || this.hasAttribute(p) || this.props[p];
-        const value = typeCast(rawValue, type, p);
-        this.props[p] = value;
+        // set the proptype
+        const type = typeOf(this.props[p]);
         this.propTypes[p] = type;
+
+        // either get value from attrs, or from default prop
+        const value =
+          this.getAttribute(p) || this.hasAttribute(p) || this.props[p];
+        this.props[p] = typeCast(value, type, p);
       });
     }
 
     _initActions() {
+      // bind actions
       Object.keys(this.actions).map(a => {
         this.actions[a] = actions[a].bind(this);
       });
     }
 
     _upradeProperty(prop) {
+      // Don't really know why we do this, but must be done to
+      // update data if a property initially was set by a framework like Vue/React
       let value = this[prop];
       delete this[prop];
       this[prop] = value;
@@ -75,6 +81,7 @@ export default function Component({
     static get observedAttributes() {
       // make sure property changes reflect attributes
       Object.keys(props).forEach(prop => {
+        // define a get and set for each prop on the prototype
         Object.defineProperty(this.prototype, prop, {
           configurable: true,
           get() {
@@ -172,7 +179,7 @@ function typeCast(value, type, attr) {
   }
 
   if (type === "number") {
-    return Number(value);
+    return parseInt(value);
   }
 
   if (type === "string") {

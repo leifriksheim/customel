@@ -4,42 +4,45 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <script src="./highlight.js"></script>
+    <script src="./marked.js"></script>
     <script src="./components/index.js" type="module"></script>
+    <link rel="stylesheet" href="./styles.css"></link>
     <title>Customel</title>
-    <style>
-      * {
-        box-sizing: border-box;
-        font-family: Arial;
-      }
-    </style>
   </head>
   <body>
     <customel-layout>
       <aside name="sidebar">
-        <h1>Customel</h1>
-        <customel-toc>
-          <customel-block my="1">
-            <customel-link to="#intro">Introduction</customel-link>
-          </customel-block>
-          <customel-block my="1">
-            <customel-link to="#installation">Installation</customel-link>
-          </customel-block>
-        </customel-toc>
+        <customel-toc></customel-toc>
       </aside>
-      <div>Halla</div>
+      <div class="markdown-body">
+        <customel-container left="true" id="content"></customel-container>
+      </div>
     </customel-sidebar>
 
     <script>
 
-    async function fetchContent(url) {
-      try {
-        const res = await fetch(url);
-      } catch (e) {
-        console.log('error', e)
-      }
-    }
 
-    fetchContent(window.origin + '/docs/docs.md');
+      marked.setOptions({ highlight: function(code, lang) {
+          return lang ? hljs.highlight(lang, code).value : code;
+        }
+      });
+
+      async function fetchContent(url) {
+        try {
+          const res = await fetch(url);
+          const text = await res.text();
+          const content = document.querySelector('#content');
+          content.innerHTML = marked(text);
+          document.querySelector('customel-toc').node = document.querySelector('#content');
+
+        } catch (e) {
+          console.log('error', e)
+        }
+      }
+
+      fetchContent(window.origin + '/README.md');
+
 
     </script>
 

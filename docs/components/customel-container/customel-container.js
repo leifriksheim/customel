@@ -2,9 +2,11 @@ import MyComponent from "../../../dist/index.es.js";
 
 new MyComponent({
   tag: "customel-container",
+  mode: "open",
   props: {
     wide: false,
-    narrow: false
+    narrow: false,
+    left: false
   },
   styles() {
     return getStyles(this.props);
@@ -28,7 +30,7 @@ function getStyles(props) {
   return `
     div {
       display: block;
-      margin: 0 auto;
+      ${props.left ? "" : "margin: 0 auto;"}
       width: 100%;
       max-width: ${getWidth(props)}px;
     }

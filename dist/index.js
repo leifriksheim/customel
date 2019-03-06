@@ -1640,6 +1640,7 @@ var Customel = (function () {
 
   function Component({
     tag = "my-element",
+    mode = "closed",
     props = {},
     state = {},
     actions = {},
@@ -1674,7 +1675,7 @@ var Customel = (function () {
         this.engine = html.bind(this);
         this.html = render$1.bind(this);
         this.render = render.bind(this, this.attachShadow({
-          mode: "closed"
+          mode: mode
         }), this.render); // mounted
 
         this.mounted = mounted.bind(this); // emit
@@ -1684,21 +1685,25 @@ var Customel = (function () {
 
       _initProps() {
         Object.keys(this.props).map(p => {
-          const type = typeof this.props[p];
-          const rawValue = this.getAttribute(p) || this.hasAttribute(p) || this.props[p];
-          const value = typeCast(rawValue, type, p);
-          this.props[p] = value;
-          this.propTypes[p] = type;
+          // set the proptype
+          const type = typeOf(this.props[p]);
+          this.propTypes[p] = type; // either get value from attrs, or from default prop
+
+          const value = this.getAttribute(p) || this.hasAttribute(p) || this.props[p];
+          this.props[p] = typeCast(value, type, p);
         });
       }
 
       _initActions() {
+        // bind actions
         Object.keys(this.actions).map(a => {
           this.actions[a] = actions[a].bind(this);
         });
       }
 
       _upradeProperty(prop) {
+        // Don't really know why we do this, but must be done to
+        // update data if a property initially was set by a framework like Vue/React
         let value = this[prop];
         delete this[prop];
         this[prop] = value;
@@ -1707,6 +1712,7 @@ var Customel = (function () {
       static get observedAttributes() {
         // make sure property changes reflect attributes
         Object.keys(props).forEach(prop => {
+          // define a get and set for each prop on the prototype
           Object.defineProperty(this.prototype, prop, {
             configurable: true,
 
@@ -1808,7 +1814,7 @@ var Customel = (function () {
     }
 
     if (type === "number") {
-      return Number(value);
+      return parseInt(value);
     }
 
     if (type === "string") {

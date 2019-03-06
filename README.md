@@ -1,4 +1,4 @@
-![Customel](media/logo.png)
+![Customel](/media/logo.png)
 
 <p align="center">
 <a href="https://www.npmjs.com/package/customel"><img src="https://img.shields.io/npm/v/customel.svg" alt="Version"></a>
@@ -16,17 +16,25 @@ Customel is under development. Don't use in production yet.
 - **Fast rendering ⚡️** Customel uses lighterhtml as the rendering engine for fast DOM-updates.
 - **Integrates with frameworks 💬** Create a pattern library with Customel, and use them with your favourite framework.
 
+## Introduction
+
+Custom elements are awesome. They make it possible for everybody to use your components, no matter which new javascript framework they are using. As a part of the native web platform they are a great way to build maintainable and long lasting UI-libraries.
+
+Still, writing custom elements from scratch can require quite a lot of boiler plate. Customel is a small wrapper around the api that reduces a lot of the boiler plate, enforces some best practises, and makes it easier to make new custom elements.
+
+Customel is not meant to be a way to build software or large applications. It is built as a way to create small, reusable custom elements.
+
 ## Installation
 
-The easiest way to try out Customel is using the [JSFiddle Hello World example](https://jsfiddle.net/waysofperception/zp2rd7s5/8/).
+### CDN
 
-Or, you can create an index.html file and include Customel with our CDN:
+Create an index.html file and include Customel with our CDN:
 
 ```html
 <script src="https://unpkg.com/customel"></script>
 ```
 
-If you are using native ES Modules, there is also an ES Modules compatible build:
+If you are using native ES Modules, you can include it in the index.html like this:
 
 ```html
 <script type="module">
@@ -34,32 +42,33 @@ If you are using native ES Modules, there is also an ES Modules compatible build
 </script>
 ```
 
-### NPM:
+### NPM
 
 ```
 npm install customel
 ```
 
-## Documentation
+## Quick Start
 
-To create a new element – initiate a new Customel:
+The easiest way to try out Customel is using the [JSFiddle Hello World example](https://jsfiddle.net/waysofperception/zp2rd7s5/8/). You can follow the Quick Start from here.
 
-```javascript
+To create a custom element – initiate a new Customel:
+
+```js
 // my-element.js
-
 import Customel from "//unpkg.com/customel?module";
 
 new Customel({
   tag: "my-element",
   render: function(html) {
     return html`
-      <div>My new element!</div>
+      <div>Hello my new element!</div>
     `;
   }
 });
 ```
 
-The Component will automatically get registered as a Custom Element:
+Import it in a html file, and your custom element is ready to use:
 
 ```html
 <!--  index.html --->
@@ -75,33 +84,26 @@ The Component will automatically get registered as a Custom Element:
 
 ## API
 
-## State
+### Tag
 
-Your state is contained in a state object.
-Modify the state with `this.setSate` like in React.
-`this.setState` will cause a rerender and you will get a fresh DOM with updated data.
+The tag will be your component name.
+Custom Elements require a dash in the name, to distinguish it from a native HTML element:
 
-```javascript
+```js
 new Customel({
-  tag: "my-element",
-  state: {
-    active: false
-  },
-  render: function(html) {
-    return html`
-      <button onclick=${() => this.setState({ active: true })}>
-        Active state is ${this.state.active}
-      </button>
-    `;
-  }
+  tag: "my-element"
 });
 ```
 
-## Styles
+```html
+<my-element></my-element>
+```
 
-You can return regular CSS in the styles function.
+### Styles
 
-```javascript
+To apply styles to your custom element, you can return CSS as a template literal:
+
+```js
 new Customel({
   tag: "my-element",
   state: {
@@ -125,14 +127,40 @@ new Customel({
 });
 ```
 
-## Props
+### State
 
-Most likely you want to be able to control your component from the outside.
-This is achieved throught props:
+Your state is contained in a state object.
+You can modify the state with the `this.setSate` function.
+`this.setState` will cause a rerender and you will get a fresh DOM with updated data.
 
-```javascript
+```js
 new Customel({
   tag: "my-element",
+  state: {
+    active: false
+  },
+  render: function(html) {
+    return html`
+      <button onclick=${() => this.setState({ active: true })}>
+        Active state is ${this.state.active}
+      </button>
+    `;
+  }
+});
+```
+
+### Props
+
+Use props to define data that your custom element can recieve from the outside.
+Always provide a default value to your props.
+
+#### Simple props
+
+If the default value is a `string`, `number` or a `boolean` then your prop will be available as an attribute on your custom element:
+
+```js
+new Customel({
+  tag: "my-accordion",
   props: {
     open: false
   },
@@ -154,36 +182,59 @@ new Customel({
 This makes attributes available on your component.
 
 ```html
-<my-accordion open="true"></my-accordion>
+<my-accordion title="My special list" open="true"></my-accordion>
 
 <script>
 
   const accordion = document.querySelector('my-accordion');
 
-  accordion.addEventListener('click' => {
-    accordion.setAttribute('open', false);
+  document.querySelector('my-accordion').addEventListener('click' => {
+    // "open" is a boolean, and can be changed by changing the attribute
+    const isOpen = accordion.getAttribute('open');
+    accordion.setAttribute('open', !!);
   })
 </script>
 ```
 
-### Passing down objects or arrays
+#### Advanced props
 
-If you want to pass down rich data like objects or arrays as props you need to change the property, and not the attribute on the component, as specified in "Web Components Everywhere".
+If the default value is a `function`, `object`, `array` or any other type of data, it will be available as a property on the element instead of an attribute.
+
+```js
+new Customel({
+  tag: "my-list",
+  props: {
+    todos: ["Buy milk", "Learn stuff"]
+  },
+  render: function(html) {
+    return html`
+      <ul>
+        ${this.props.todos.map(
+          todo => html`
+            <li>${todo}</li>
+          `
+        )}
+      </ul>
+    `;
+  }
+});
+```
 
 ```html
-<my-accordion></my-accordion>
+<my-list></my-list>
 
 <script>
-  const accordion = document.querySelector("my-accordion");
-  accordion.items = [{ title: "My title", content: "My content" }];
+  // "todos" is an array and can only be updated to properties on the element
+  // setting the property will triggger a rerender of the component, just like setting a new attribute
+  document.querySelector("my-list").todos = ["Other things", "More things"];
 </script>
 ```
 
 See examples on how to do this in Vue/Angular/React.
 
-## Actions
+### Actions
 
-```javascript
+```js
 new Customel({
   tag: "my-element",
   actions {

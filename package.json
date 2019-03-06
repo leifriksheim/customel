@@ -7,9 +7,10 @@
   "scripts": {
     "publish": "np",
     "clean": "rimraf dist",
-    "build": "run-s clean && run-p build:es build:iife",
+    "build": "run-s clean && run-p build:es build:iife && run-s build:min",
     "build:es": "NODE_ENV=es rollup -c",
     "build:iife": "NODE_ENV=iife rollup -c",
+    "build:min": "uglifyjs index.js -c -m -o dist/index.min.js",
     "precommit": "lint-staged"
   },
   "files": [
@@ -28,7 +29,8 @@
     "rollup-plugin-babel": "^4.3.2",
     "rollup-plugin-commonjs": "^9.2.1",
     "rollup-plugin-filesize": "^6.0.1",
-    "rollup-plugin-node-resolve": "^4.0.1"
+    "rollup-plugin-node-resolve": "^4.0.1",
+    "uglify-es": "^3.3.9"
   },
   "dependencies": {
     "lighterhtml": "^0.9.1"
