@@ -1,4 +1,4 @@
-import CustomEl from "../../../dist/index.es.js";
+import Customel from "//unpkg.com/customel?module";
 
 function qa(s, pos = document) {
   return [...pos.querySelectorAll(s)];
@@ -10,7 +10,7 @@ function getTextArray(nodes) {
 
 function template(html, context) {}
 
-new CustomEl({
+new Customel({
   tag: "customel-toc",
   props: {
     node: []
