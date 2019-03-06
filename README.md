@@ -13,7 +13,7 @@ Customel is under development. Don't use in production yet.
 
 - **Lightweight 🕊️** Customel is a small wrapper around the HTMLElement Class, and consists of around 180 LOC.
 - **Intuitive 💡** Create custom elements with familiar concepts borrowed from UI-libraries like React and Vue.
-- **Fast rendering ⚡️** Customel uses lighterhtml as the rendering engine for fast DOM-updates.
+- **Fast rendering ⚡️** Customel uses [lighterhtml](https://github.com/WebReflection/lighterhtml) as the rendering engine for fast DOM-updates.
 - **Integrates with frameworks 💬** Create a pattern library with Customel, and use them with your favourite framework.
 
 ## Introduction
@@ -28,7 +28,7 @@ Customel is not meant to be a way to build software or large applications. It is
 
 ### CDN
 
-Create an index.html file and include Customel with our CDN:
+Create an index.html file and include Customel with the CDN:
 
 ```html
 <script src="https://unpkg.com/customel"></script>
@@ -48,7 +48,7 @@ If you are using native ES Modules, you can include it in the index.html like th
 npm install customel
 ```
 
-## Quick Start
+## Getting started
 
 The easiest way to try out Customel is using the [JSFiddle Hello World example](https://jsfiddle.net/waysofperception/zp2rd7s5/8/). You can follow the Quick Start from here.
 
@@ -95,8 +95,29 @@ new Customel({
 });
 ```
 
+You can then use it on your html page with the name you gave it:
+
 ```html
 <my-element></my-element>
+```
+
+### Render
+
+You probably want to render some html inside your custom element.
+The render property returns a `html` function that we can use to display what we want.
+The `html` function is a tagged template that allows you to write regular HTML with template literals for fast DOM-updates without a Virtual DOM. Read more about [lighterhtml](https://github.com/WebReflection/lighterhtml) and how to use it, if you want to know more.
+
+```js
+new Customel({
+  tag: "my-element",
+  render: function(html) {
+    const elementName = "my-element";
+
+    return html`
+      <div>Hello ${elementName}!</div>
+    `;
+  }
+});
 ```
 
 ### Styles
