@@ -6,7 +6,7 @@
 </p>
 
 ```
-Customel is just an experiment at the moment. Don't use in production yet.
+Customel is just an experiment at the moment. Don't use in production.
 ```
 
 > A tiny wrapper function to simplify the creation of Custom Elements/Web Components.
