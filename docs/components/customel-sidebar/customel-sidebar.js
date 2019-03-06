@@ -1,7 +1,7 @@
-import MyComponent from "../../../dist/index.es.js";
+import Customel from "//unpkg.com/customel?module";
 import getStyles from "./styles.js";
 
-new MyComponent({
+new Customel({
   tag: "customel-sidebar",
   props: {
     wide: false,

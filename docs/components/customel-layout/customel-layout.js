@@ -1,6 +1,6 @@
-import MyComponent from "../../../dist/index.es.js";
+import Customel from "//unpkg.com/customel?module";
 
-new MyComponent({
+new Customel({
   tag: "customel-layout",
   mode: "open",
   styles() {

@@ -1,7 +1,7 @@
-import MyComponent from "../../../dist/index.es.js";
+import Customel from "//unpkg.com/customel?module";
 import { carouselItemStyles } from "./styles.js";
 
-new MyComponent({
+new Customel({
   tag: "customel-carousel-item",
   styles() {
     return carouselItemStyles(this.props);
