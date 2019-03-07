@@ -140,9 +140,7 @@ new Customel({
   },
   render: function(html) {
     return html`
-      <button onclick=${() => this.setState({ active: true })}>
-        My button
-      </button>
+      <button>My button</button>
     `;
   }
 });
