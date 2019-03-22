@@ -249,16 +249,14 @@ new Customel({
 </script>
 ```
 
-See examples on how to do this in Vue/Angular/React.
-
 ### Actions
 
 ```js
 new Customel({
   tag: "my-element",
-  actions {
+  actions: {
     showMessage() {
-      alert('My message!');
+      alert("My message!");
     }
   },
   render: function(html) {
@@ -270,5 +268,40 @@ new Customel({
   }
 });
 ```
+
+## Use in frameworks
+
+### React
+
+### Vue
+
+Custom Elements play nicely with Vue, but for rich data you will need to add a `.prop` on the attribute to bind the value to the property and not the attribute of the custom element.
+For now you will also need to replace the whole array every time you update it's value, as Customel does not watch for nested changes. This may come in the future via use of a Proxy.
+
+```html
+<div id="vue">
+  <my-accordion :title="mainTitle" :items.prop="items"></my-accordion>
+</div>
+<script>
+  new Vue({
+    el: "#vue",
+    data: {
+      mainTitle: "My accordion",
+      items: [
+        {
+          title: "My title",
+          content: "Here is some content about this stuff"
+        },
+        {
+          title: "Another title",
+          content: "Here is some other content about this stuff"
+        }
+      ]
+    }
+  });
+</script>
+```
+
+### Angular
 
 Customel is [MIT licensed](./LICENSE).

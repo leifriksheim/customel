@@ -1639,6 +1639,8 @@ function Component({
   tag = "my-element",
   mode = "closed",
   props = {},
+  shadow = true,
+  autoDefine = true,
   state = {},
   actions = {},
   mounted = () => {},
@@ -1646,7 +1648,7 @@ function Component({
   render: render$1 = () => {},
   styles = () => ""
 }) {
-  class MyComponent extends HTMLElement {
+  class Customel extends HTMLElement {
     constructor() {
       super(); // props
 
@@ -1671,9 +1673,9 @@ function Component({
 
       this.engine = html.bind(this);
       this.html = render$1.bind(this);
-      this.render = render.bind(this, this.attachShadow({
+      this.render = render.bind(this, shadow ? this.attachShadow({
         mode: mode
-      }), this.render); // mounted
+      }) : this, this.render); // mounted
 
       this.mounted = mounted.bind(this); // emit
 
@@ -1785,14 +1787,18 @@ function Component({
 
     emit(name, data) {
       this.dispatchEvent(new CustomEvent(name, {
-        detail: data
+        detail: data,
+        bubbles: false
       }));
     }
 
   }
 
-  customElements.define(tag, MyComponent);
-  return MyComponent;
+  if (autoDefine) {
+    customElements.define(tag, Customel);
+  }
+
+  return Customel;
 }
 
 function typeCast(value, type, attr) {

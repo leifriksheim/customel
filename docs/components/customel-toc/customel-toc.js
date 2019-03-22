@@ -28,29 +28,47 @@ new Customel({
         text-decoration: none;
         underline: none;
         color: black;
-        padding-bottom: 10px;
-        color: #c4c4c4;
+        margin-bottom: 10px;
+        opacity: 0.6;
       }
       a:hover {
         color: black;
+        opacity: 1;
+        transform: translateX(0px);
+        transition: all 0.2s ease;
       }
       a[active=true] {
-        color: black;
+        opacity: 1;
+        font-weight: bold;
+        transform: translateX(10px);
+      }
+      a[active=true]:before {
+        content: "";
+        display: block;
+        width: 5px;
+        height: 5px;
+        background: black;
+        border-radius: 100%;
+        position: absolute;
+        left: -10px;
+        top: 50%;
+        transform: translateY(-50%);
       }
       .H1 {
-
+        opacity: 1;
       }
       .H2 {
-        padding-left: 10px;
-        padding-top: 10px;
+        margin-left: 10px;
+        margin-top: 10px;
       }
       .H3 {
-        padding-left: 20px;
-        font-size: 0.8em;
+        margin-left: 20px;
+        font-size: 0.85em;
+
       }
       .H4 {
-        padding-left: 30px;
-        font-size: 0.8em;
+        margin-left: 30px;
+        font-size: 0.85em;
       }
     `;
   },

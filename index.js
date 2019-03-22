@@ -4,6 +4,8 @@ export default function Component({
   tag = "my-element",
   mode = "closed",
   props = {},
+  shadow = true,
+  autoDefine = true,
   state = {},
   actions = {},
   mounted = () => {},
@@ -11,7 +13,7 @@ export default function Component({
   render = () => {},
   styles = () => ""
 }) {
-  class MyComponent extends HTMLElement {
+  class Customel extends HTMLElement {
     constructor() {
       super();
 
@@ -39,7 +41,7 @@ export default function Component({
       this.html = render.bind(this);
       this.render = lighterRender.bind(
         this,
-        this.attachShadow({ mode: mode }),
+        shadow ? this.attachShadow({ mode: mode }) : this,
         this.render
       );
 
@@ -156,13 +158,17 @@ export default function Component({
     }
 
     emit(name, data) {
-      this.dispatchEvent(new CustomEvent(name, { detail: data }));
+      this.dispatchEvent(
+        new CustomEvent(name, { detail: data, bubbles: false })
+      );
     }
   }
 
-  customElements.define(tag, MyComponent);
+  if (autoDefine) {
+    customElements.define(tag, Customel);
+  }
 
-  return MyComponent;
+  return Customel;
 }
 
 function typeCast(value, type, attr) {
