@@ -1689,7 +1689,7 @@ function Component({
         this.propTypes[p] = type; // either get value from attrs, or from default prop
 
         const value = this.getAttribute(p) || this.hasAttribute(p) || this.props[p];
-        this.props[p] = typeCast(value, type, p);
+        this.props[p] = typeCast(value, type);
       });
     }
 
@@ -1721,23 +1721,27 @@ function Component({
 
           set(newVal) {
             // TODO: Do a deep compare to avoid rerender on equal objects and arrays
-            const oldVal = this.props[prop];
-            this.props[prop] = newVal;
+            const oldVal = this.props[prop]; // only rerender and set attriutes if value is new
 
-            if (typeof newVal === "object") {
-              // rerender if property is rich data
+            if (newVal !== oldVal) {
+              // set the new value
+              this.props[prop] = newVal; // if value is any type of object, don't reflect attributes
+
+              if (typeof newVal !== "object") {
+                // set attributes and attributeChangedCallback will rerender for us
+                if (newVal === (false)) {
+                  this.removeAttribute(prop);
+                } else if (newVal === true) {
+                  this.setAttribute(prop, "");
+                } else {
+                  this.setAttribute(prop, newVal);
+                }
+              } // rerender and notify about the change
+
+
               this.render();
-            } else {
-              // set attributes and attributeChangedCallback will rerender for us
-              if (newVal === null) {
-                this.removeAttribute(prop);
-              } else {
-                this.setAttribute(prop, newVal);
-              }
-            } // notify component
-
-
-            this.propChanged(prop, oldVal, newVal);
+              this.propChanged(prop, oldVal, newVal);
+            }
           }
 
         });
@@ -1748,7 +1752,7 @@ function Component({
     connectedCallback() {
       // upgrade prop if it's already set by a framework for instance
       Object.keys(this.props).forEach(prop => {
-        this._upradeProperty(prop, this.prototype);
+        this._upradeProperty(prop);
       }); // render
 
       this.render(); // fire mounted hook
@@ -1757,15 +1761,12 @@ function Component({
     }
 
     attributeChangedCallback(attr, _, updatedVal) {
-      const type = this.propTypes[attr];
       const oldVal = this.props[attr];
-      const newVal = typeCast(updatedVal || this.hasAttribute(attr), type, attr);
+      const newVal = typeCast(updatedVal || this.hasAttribute(attr), this.propTypes[attr]);
 
       if (oldVal !== newVal) {
-        this.props[attr] = newVal;
-        this.render(); // notify component
-
-        this.propChanged(attr, oldVal, newVal);
+        // set new value – triggers the setter
+        this[attr] = newVal;
       }
     }
 
@@ -1801,19 +1802,13 @@ function Component({
   return Customel;
 }
 
-function typeCast(value, type, attr) {
-  const actualType = typeOf(value);
-
+function typeCast(value, type) {
   if (type === "boolean") {
-    if (value === "true" || "false") {
-      return value === "true" || "" ? true : false;
+    if (value === "true" || value === "" || value === true) {
+      return true;
+    } else {
+      return false;
     }
-
-    if (actualType !== "boolean") {
-      console.error(`Property "${attr}" with value ${value} is not a boolean.`);
-    }
-
-    return value;
   }
 
   if (type === "number") {
@@ -1825,7 +1820,6 @@ function typeCast(value, type, attr) {
   }
 
   return value;
-  console.error(`Attributes can only be primitives. "${attr}" with value ${value} is not a primitive.`);
 }
 
 function typeOf(value) {
