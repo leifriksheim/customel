@@ -1661,7 +1661,8 @@ function Component({
       this._initProps(); // state
 
 
-      this.state = state;
+      this.state = { ...state
+      };
       this.setState = this.setState.bind(this); // styles
 
       this.styles = styles.bind(this); // actions
