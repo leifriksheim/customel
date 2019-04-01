@@ -1652,7 +1652,8 @@ function Component({
     constructor() {
       super(); // props
 
-      this.props = props;
+      this.props = { ...props
+      };
       this.propTypes = {};
       this._initProps = this._initProps.bind(this);
       this.propChanged = propChanged.bind(this);
@@ -1665,7 +1666,8 @@ function Component({
 
       this.styles = styles.bind(this); // actions
 
-      this.actions = actions;
+      this.actions = { ...actions
+      };
       this._initActions = this._initActions.bind(this);
 
       this._initActions(); // render
@@ -1725,22 +1727,22 @@ function Component({
 
             if (newVal !== oldVal) {
               // set the new value
-              this.props[prop] = newVal; // if value is any type of object, don't reflect attributes
-
-              if (typeof newVal !== "object") {
-                // set attributes and attributeChangedCallback will rerender for us
-                if (newVal === (false)) {
-                  this.removeAttribute(prop);
-                } else if (newVal === true) {
-                  this.setAttribute(prop, "");
-                } else {
-                  this.setAttribute(prop, newVal);
-                }
-              } // rerender and notify about the change
-
+              this.props[prop] = newVal; // rerender and notify about the change
 
               this.render();
               this.propChanged(prop, oldVal, newVal);
+            } // if value is any type of object, don't reflect attributes
+
+
+            if (typeof newVal !== "object") {
+              // set attributes and attributeChangedCallback will rerender for us
+              if (newVal === (false)) {
+                this.removeAttribute(prop);
+              } else if (newVal === true) {
+                this.setAttribute(prop, "");
+              } else {
+                this.setAttribute(prop, newVal);
+              }
             }
           }
 
