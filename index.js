@@ -10,6 +10,7 @@ export default function Component({
   actions = {},
   mounted = () => {},
   propChanged = () => {},
+  stateChanged = () => {},
   render = () => {},
   styles = () => ""
 }) {
@@ -19,7 +20,7 @@ export default function Component({
 
       // props
       this.props = { ...props };
-      this.propTypes = {};
+      this._propTypes = {};
       this._initProps = this._initProps.bind(this);
       this.propChanged = propChanged.bind(this);
       this._initProps();
@@ -27,9 +28,10 @@ export default function Component({
       // state
       this.state = { ...state };
       this.setState = this.setState.bind(this);
+      this.stateChanged = stateChanged.bind(this);
 
       // styles
-      this.styles = styles.bind(this);
+      this._styles = styles.bind(this);
 
       // actions
       this.actions = { ...actions };
@@ -37,8 +39,8 @@ export default function Component({
       this._initActions();
 
       // render
-      this.engine = html.bind(this);
-      this.html = render.bind(this);
+      this._engine = html.bind(this);
+      this._html = render.bind(this);
       this.render = lighterRender.bind(
         this,
         shadow ? this.attachShadow({ mode: mode }) : this,
@@ -56,7 +58,7 @@ export default function Component({
       Object.keys(this.props).map(p => {
         // set the proptype
         const type = typeOf(this.props[p]);
-        this.propTypes[p] = type;
+        this._propTypes[p] = type;
 
         // either get value from attrs, or from default prop
         const value =
@@ -75,7 +77,6 @@ export default function Component({
     _upradeProperty(prop) {
       // Don't really know why we do this, but must be done to
       // update data if a property initially was set by a framework like Vue/React
-
       let value = this[prop];
       delete this[prop];
       this[prop] = value;
@@ -105,20 +106,23 @@ export default function Component({
 
             // if value is any type of object, don't reflect attributes
             if (typeof newVal !== "object") {
+              const attr = camelCase(prop);
               // set attributes and attributeChangedCallback will rerender for us
               if (newVal === (null || false)) {
-                this.removeAttribute(prop);
+                this.removeAttribute(attr);
               } else if (newVal === true) {
-                this.setAttribute(prop, "");
+                this.setAttribute(attr, "");
               } else {
-                this.setAttribute(prop, newVal);
+                this.setAttribute(attr, newVal);
               }
             }
           }
         });
       });
 
-      return Object.keys(props);
+      return Object.keys(props).map(propName => {
+        return kebabCase(propName);
+      });
     }
 
     connectedCallback() {
@@ -134,29 +138,32 @@ export default function Component({
     }
 
     attributeChangedCallback(attr, _, updatedVal) {
-      const oldVal = this.props[attr];
+      const propName = camelCase(attr);
+      const oldVal = this.props[propName];
       const newVal = typeCast(
         updatedVal || this.hasAttribute(attr),
-        this.propTypes[attr]
+        this._propTypes[propName]
       );
 
       if (oldVal !== newVal) {
         // set new value – triggers the setter
-        this[attr] = newVal;
+        this[propName] = newVal;
       }
     }
 
     render() {
-      return this.engine`
+      return this._engine`
         <style>
-        ${this.styles()}
+        ${this._styles()}
         </style>
-        ${this.html(this.engine)}
+        ${this._html(this._engine)}
       `;
     }
 
     setState(newState) {
-      this.state = { ...this.state, ...newState };
+      const oldState = this.state;
+      this.state = { ...oldState, ...newState };
+      this.stateChanged({ ...oldState }, { ...this.state });
       this.render();
     }
 
@@ -174,6 +181,7 @@ export default function Component({
   return Customel;
 }
 
+// Typecast a value
 function typeCast(value, type) {
   if (type === "boolean") {
     if (value === "true" || value === "" || value === true) {
@@ -194,9 +202,30 @@ function typeCast(value, type) {
   return value;
 }
 
+// Return the true type of value
 function typeOf(value) {
   return Object.prototype.toString
     .call(value)
     .slice(8, -1)
     .toLowerCase();
+}
+
+const invalidChars = /[^a-zA-Z0-9:]+/g;
+
+// Return kebab-case
+function kebabCase(str) {
+  return str
+    .replace(/([a-z])([A-Z])/g, match => match[0] + "-" + match[1])
+    .replace(invalidChars, "-")
+    .toLowerCase();
+}
+
+// Return camlCase
+function camelCase(str) {
+  return str
+    .replace(/_/g, (_, index) => (index === 0 ? _ : "-"))
+    .replace(/(?:^\w|[A-Z]|\b\w)/g, (letter, index) =>
+      index === 0 ? letter.toLowerCase() : letter.toUpperCase()
+    )
+    .replace(invalidChars, "");
 }

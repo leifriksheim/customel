@@ -1645,6 +1645,7 @@ function Component({
   actions = {},
   mounted = () => {},
   propChanged = () => {},
+  stateChanged = () => {},
   render: render$1 = () => {},
   styles = () => ""
 }) {
@@ -1654,7 +1655,7 @@ function Component({
 
       this.props = { ...props
       };
-      this.propTypes = {};
+      this._propTypes = {};
       this._initProps = this._initProps.bind(this);
       this.propChanged = propChanged.bind(this);
 
@@ -1663,9 +1664,10 @@ function Component({
 
       this.state = { ...state
       };
-      this.setState = this.setState.bind(this); // styles
+      this.setState = this.setState.bind(this);
+      this.stateChanged = stateChanged.bind(this); // styles
 
-      this.styles = styles.bind(this); // actions
+      this._styles = styles.bind(this); // actions
 
       this.actions = { ...actions
       };
@@ -1674,8 +1676,8 @@ function Component({
       this._initActions(); // render
 
 
-      this.engine = html.bind(this);
-      this.html = render$1.bind(this);
+      this._engine = html.bind(this);
+      this._html = render$1.bind(this);
       this.render = render.bind(this, shadow ? this.attachShadow({
         mode: mode
       }) : this, this.render); // mounted
@@ -1689,7 +1691,7 @@ function Component({
       Object.keys(this.props).map(p => {
         // set the proptype
         const type = typeOf(this.props[p]);
-        this.propTypes[p] = type; // either get value from attrs, or from default prop
+        this._propTypes[p] = type; // either get value from attrs, or from default prop
 
         const value = this.getAttribute(p) || this.hasAttribute(p) || this.props[p];
         this.props[p] = typeCast(value, type);
@@ -1736,20 +1738,23 @@ function Component({
 
 
             if (typeof newVal !== "object") {
-              // set attributes and attributeChangedCallback will rerender for us
+              const attr = camelCase(prop); // set attributes and attributeChangedCallback will rerender for us
+
               if (newVal === (false)) {
-                this.removeAttribute(prop);
+                this.removeAttribute(attr);
               } else if (newVal === true) {
-                this.setAttribute(prop, "");
+                this.setAttribute(attr, "");
               } else {
-                this.setAttribute(prop, newVal);
+                this.setAttribute(attr, newVal);
               }
             }
           }
 
         });
       });
-      return Object.keys(props);
+      return Object.keys(props).map(propName => {
+        return kebabCase(propName);
+      });
     }
 
     connectedCallback() {
@@ -1764,28 +1769,33 @@ function Component({
     }
 
     attributeChangedCallback(attr, _, updatedVal) {
-      const oldVal = this.props[attr];
-      const newVal = typeCast(updatedVal || this.hasAttribute(attr), this.propTypes[attr]);
+      const propName = camelCase(attr);
+      const oldVal = this.props[propName];
+      const newVal = typeCast(updatedVal || this.hasAttribute(attr), this._propTypes[propName]);
 
       if (oldVal !== newVal) {
         // set new value – triggers the setter
-        this[attr] = newVal;
+        this[propName] = newVal;
       }
     }
 
     render() {
-      return this.engine`
+      return this._engine`
         <style>
-        ${this.styles()}
+        ${this._styles()}
         </style>
-        ${this.html(this.engine)}
+        ${this._html(this._engine)}
       `;
     }
 
     setState(newState) {
-      this.state = { ...this.state,
+      const oldState = this.state;
+      this.state = { ...oldState,
         ...newState
       };
+      this.stateChanged({ ...oldState
+      }, { ...this.state
+      });
       this.render();
     }
 
@@ -1803,7 +1813,7 @@ function Component({
   }
 
   return Customel;
-}
+} // Typecast a value
 
 function typeCast(value, type) {
   if (type === "boolean") {
@@ -1823,10 +1833,22 @@ function typeCast(value, type) {
   }
 
   return value;
-}
+} // Return the true type of value
+
 
 function typeOf(value) {
   return Object.prototype.toString.call(value).slice(8, -1).toLowerCase();
+}
+
+const invalidChars = /[^a-zA-Z0-9:]+/g; // Return kebab-case
+
+function kebabCase(str) {
+  return str.replace(/([a-z])([A-Z])/g, match => match[0] + "-" + match[1]).replace(invalidChars, "-").toLowerCase();
+} // Return camlCase
+
+
+function camelCase(str) {
+  return str.replace(/_/g, (_, index) => index === 0 ? _ : "-").replace(/(?:^\w|[A-Z]|\b\w)/g, (letter, index) => index === 0 ? letter.toLowerCase() : letter.toUpperCase()).replace(invalidChars, "");
 }
 
 export default Component;
