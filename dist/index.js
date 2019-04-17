@@ -1640,7 +1640,7 @@ var Customel = (function () {
 
   function Component({
     tag = "my-element",
-    mode = "closed",
+    mode = "open",
     props = {},
     shadow = true,
     autoDefine = true,
@@ -1729,7 +1729,8 @@ var Customel = (function () {
 
             set(newVal) {
               // TODO: Do a deep compare to avoid rerender on equal objects and arrays
-              const oldVal = this.props[prop]; // only rerender and set attriutes if value is new
+              const oldVal = this.props[prop];
+              const propType = this._propTypes[prop]; // only rerender and set attriutes if value is new
 
               if (newVal !== oldVal) {
                 // set the new value
@@ -1737,7 +1738,7 @@ var Customel = (function () {
 
                 this.render();
                 this.propChanged(prop, oldVal, newVal);
-              } // if value is any type of object, don't reflect attributes
+              } // only reflect attr if type is primitive
 
 
               if (typeof newVal !== "object") {
@@ -1747,6 +1748,8 @@ var Customel = (function () {
                   this.removeAttribute(attr);
                 } else if (newVal === true) {
                   this.setAttribute(attr, "");
+                } else if (propType === "string" && newVal === "") {
+                  this.removeAttribute(attr);
                 } else {
                   this.setAttribute(attr, newVal);
                 }

@@ -51,11 +51,6 @@ new Customel({
       }
     `;
   },
-  actions: {
-    showAlert() {
-      alert("halla");
-    }
-  },
   render: function(html) {
     const { items } = this.props;
 

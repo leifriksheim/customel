@@ -6,6 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <script src="vue.js"></script>
     <script src="my-accordion.js" type="module"></script>
+    <script src="my-title.js" type="module"></script>
     <title>Document</title>
     <style>
       #vue {
@@ -17,12 +18,15 @@
   </head>
   <body>
     <div id="vue">
+      <my-title :title="title"></my-title>
+      {{ title }}
       <my-accordion :items.prop="items"></my-accordion>
     </div>
     <script>
       new Vue({
         el: "#vue",
         data: {
+          title: "Init vue title",
           items: [
             {
               title: "My title",
