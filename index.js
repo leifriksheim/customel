@@ -107,7 +107,7 @@ export default function Component({
 
             // only reflect attr if type is primitive
             if (typeof newVal !== "object") {
-              const attr = camelCase(prop);
+              const attr = kebabCase(prop);
               // set attributes and attributeChangedCallback will rerender for us
               if (newVal === (null || false)) {
                 this.removeAttribute(attr);

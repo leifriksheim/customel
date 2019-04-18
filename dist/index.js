@@ -1742,7 +1742,7 @@ var Customel = (function () {
 
 
               if (typeof newVal !== "object") {
-                const attr = camelCase(prop); // set attributes and attributeChangedCallback will rerender for us
+                const attr = kebabCase(prop); // set attributes and attributeChangedCallback will rerender for us
 
                 if (newVal === (false)) {
                   this.removeAttribute(attr);
