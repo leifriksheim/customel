@@ -59,6 +59,7 @@ To create a custom element – initiate a new Customel:
 import Customel from "//unpkg.com/customel?module";
 
 new Customel({
+  define: true,
   tag: "my-element",
   render: function(html) {
     return html`
@@ -84,6 +85,22 @@ Import it in a html file, and your custom element is ready to use:
 
 ## API
 
+### Define
+
+If you set `define` to `true` it will immediately register the component in the custom elements registery, and it will be available in the DOM right away.
+
+If define is false (as it is by default), then you must manually register it like this
+
+```js
+const Component = new Customel({
+  define: true
+  tag: "my-element"
+});
+
+customElements.define('my-component', Component)
+
+```
+
 ### Tag
 
 The tag will be your component name.
@@ -91,6 +108,7 @@ Custom Elements require a dash in the name, to distinguish it from a native HTML
 
 ```js
 new Customel({
+  define: true
   tag: "my-element"
 });
 ```
@@ -109,6 +127,7 @@ The `html` function is a tagged template that allows you to write regular HTML w
 
 ```js
 new Customel({
+  define: true
   tag: "my-element",
   render: function(html) {
     const elementName = "my-element";
@@ -126,6 +145,7 @@ To apply styles to your custom element, you can return CSS as a template literal
 
 ```js
 new Customel({
+  define: true
   tag: "my-element",
   state: {
     active: false
@@ -154,6 +174,7 @@ You can modify the state with the `this.setSate` function.
 
 ```js
 new Customel({
+  define: true
   tag: "my-element",
   state: {
     active: false
@@ -179,6 +200,7 @@ If the default value is a `string`, `number` or a `boolean` then your prop will 
 
 ```js
 new Customel({
+  define: true,
   tag: "my-accordion",
   props: {
     open: false
@@ -221,6 +243,7 @@ If the default value is a `function`, `object`, `array` or any other type of dat
 
 ```js
 new Customel({
+  define: true,
   tag: "my-list",
   props: {
     todos: ["Buy milk", "Learn stuff"]
@@ -253,6 +276,7 @@ new Customel({
 
 ```js
 new Customel({
+  define: true,
   tag: "my-element",
   actions: {
     showMessage() {

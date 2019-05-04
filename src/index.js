@@ -1,10 +1,12 @@
-import { html, render as lighterRender } from "lighterhtml";
+import emerj from "./emerj.js";
+import { bindEvents } from "./events.js";
+import { typeOf, kebabCase, camelCase, typeCast } from "./utils.js";
+import { html } from "./html.js";
 
 export default function Customel({
   tag = "my-element",
   mode = "open",
   props = {},
-  shadow = true,
   define = false,
   state = {},
   actions = {},
@@ -39,13 +41,10 @@ export default function Customel({
       this._initActions();
 
       // render
-      this._engine = html.bind(this);
-      this._html = render.bind(this);
-      this.render = lighterRender.bind(
-        this,
-        shadow ? this.attachShadow({ mode: mode }) : this,
-        this.render
-      );
+      this._shadowRoot = this.attachShadow({ mode });
+      this._html = html.bind(this);
+      this._template = render.bind(this);
+      this.render = this.render.bind(this);
 
       // mounted
       this.mounted = mounted.bind(this);
@@ -155,12 +154,12 @@ export default function Customel({
     }
 
     render() {
-      return this._engine`
-        <style>
-        ${this._styles()}
-        </style>
-        ${this._html(this._engine)}
-      `;
+      const temp = this._template(this._html);
+      const template = this._html`<style>${this._styles()}</style>${
+        temp.string
+      }`;
+      emerj.merge(this._shadowRoot, template.string);
+      bindEvents(this._shadowRoot, { ...template.events, ...temp.events });
     }
 
     setState(newState) {
@@ -182,53 +181,4 @@ export default function Customel({
   }
 
   return Component;
-}
-
-// Typecast a value
-function typeCast(value, type) {
-  if (type === "boolean") {
-    if (value === "true" || value === "" || value === true) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  if (type === "number") {
-    return parseInt(value);
-  }
-
-  if (type === "string") {
-    return String(value);
-  }
-
-  return value;
-}
-
-// Return the true type of value
-function typeOf(value) {
-  return Object.prototype.toString
-    .call(value)
-    .slice(8, -1)
-    .toLowerCase();
-}
-
-const invalidChars = /[^a-zA-Z0-9:]+/g;
-
-// Return kebab-case
-function kebabCase(str) {
-  return str
-    .replace(/([a-z])([A-Z])/g, match => match[0] + "-" + match[1])
-    .replace(invalidChars, "-")
-    .toLowerCase();
-}
-
-// Return camlCase
-function camelCase(str) {
-  return str
-    .replace(/_/g, (_, index) => (index === 0 ? _ : "-"))
-    .replace(/(?:^\w|[A-Z]|\b\w)/g, (letter, index) =>
-      index === 0 ? letter.toLowerCase() : letter.toUpperCase()
-    )
-    .replace(invalidChars, "");
 }

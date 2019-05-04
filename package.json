@@ -13,7 +13,7 @@
     "build:iife": "NODE_ENV=iife rollup -c",
     "build:es:watch": "NODE_ENV=es rollup -c --watch",
     "build:iife:watch": "NODE_ENV=iife rollup -c --watch",
-    "build:min": "uglifyjs index.js -c -m -o dist/index.min.js",
+    "build:min": "uglifyjs dist/index.js -c -m -o dist/index.min.js",
     "precommit": "lint-staged"
   },
   "files": [

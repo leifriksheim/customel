@@ -1,0 +1,67 @@
+// Return the true type of value
+export function typeOf(value) {
+  return Object.prototype.toString
+    .call(value)
+    .slice(8, -1)
+    .toLowerCase();
+}
+
+// Hash a string - make an id of a string bascially
+export function hash(s) {
+  return s.split("").reduce(function(a, b) {
+    a = (a << 5) - a + b.charCodeAt(0);
+    return a & a;
+  }, 0);
+}
+
+export function uuid() {
+  return (
+    Math.random()
+      .toString(36)
+      .substring(2, 15) +
+    Math.random()
+      .toString(36)
+      .substring(2, 15)
+  );
+}
+
+const invalidChars = /[^a-zA-Z0-9:]+/g;
+
+// Return kebab-case
+export function kebabCase(str) {
+  return str
+    .replace(/([a-z])([A-Z])/g, match => match[0] + "-" + match[1])
+    .replace(invalidChars, "-")
+    .toLowerCase();
+}
+
+// Return camlCase
+export function camelCase(str) {
+  return str
+    .replace(/_/g, (_, index) => (index === 0 ? _ : "-"))
+    .replace(/(?:^\w|[A-Z]|\b\w)/g, (letter, index) =>
+      index === 0 ? letter.toLowerCase() : letter.toUpperCase()
+    )
+    .replace(invalidChars, "");
+}
+
+// Typecast attributes
+export function typeCast(value, type) {
+  if (type === "boolean") {
+    if (value === "true" || value === "" || value === true) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  if (type === "number") {
+    return parseInt(value);
+  }
+
+  if (type === "string") {
+    return String(value);
+  }
+
+  return value;
+}

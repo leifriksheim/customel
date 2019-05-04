@@ -14,7 +14,6 @@ export default {
     format: env,
     name: "Customel"
   },
-  external: ["react", "styled-components"],
   plugins: [
     resolve(),
     babel({

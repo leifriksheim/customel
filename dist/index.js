@@ -1638,12 +1638,12 @@ var Customel = (function () {
     this.args = args;
   }
 
-  function Component({
+  function Customel({
     tag = "my-element",
     mode = "open",
     props = {},
     shadow = true,
-    autoDefine = true,
+    define = false,
     state = {},
     actions = {},
     mounted = () => {},
@@ -1652,7 +1652,7 @@ var Customel = (function () {
     render: render$1 = () => {},
     styles = () => ""
   }) {
-    class Customel extends HTMLElement {
+    class Component extends HTMLElement {
       constructor() {
         super(); // props
 
@@ -1814,11 +1814,11 @@ var Customel = (function () {
 
     }
 
-    if (autoDefine) {
-      customElements.define(tag, Customel);
+    if (define) {
+      customElements.define(tag, Component);
     }
 
-    return Customel;
+    return Component;
   } // Typecast a value
 
   function typeCast(value, type) {
@@ -1857,6 +1857,6 @@ var Customel = (function () {
     return str.replace(/_/g, (_, index) => index === 0 ? _ : "-").replace(/(?:^\w|[A-Z]|\b\w)/g, (letter, index) => index === 0 ? letter.toLowerCase() : letter.toUpperCase()).replace(invalidChars, "");
   }
 
-  return Component;
+  return Customel;
 
 }());
