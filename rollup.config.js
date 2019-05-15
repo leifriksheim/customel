@@ -5,7 +5,7 @@ import pkg from "./package.json";
 const env = process.env.NODE_ENV;
 
 export default {
-  input: "index.js",
+  input: "src/index.js",
   output: {
     file: {
       es: pkg.module,
