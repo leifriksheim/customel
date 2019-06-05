@@ -2,6 +2,8 @@
   <img style="margin: 0 auto;" width="300px" align="center" src="/media/logo.png" />
 </div>
 
+<hr />
+
 <p align="center">
 <a href="https://www.npmjs.com/package/customel"><img src="https://img.shields.io/npm/v/customel.svg" alt="Version"></a>
 <a href="https://www.npmjs.com/package/customel"><img src="https://img.shields.io/npm/l/customel.svg" alt="License"></a>
