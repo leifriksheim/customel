@@ -1,4 +1,6 @@
+<div style="text-align: center; margin: 0 auto;">
 <img style="margin: 0 auto;" width="300px" align="center" src="/media/logo.png" />
+</div>
 
 <p align="center">
 <a href="https://www.npmjs.com/package/customel"><img src="https://img.shields.io/npm/v/customel.svg" alt="Version"></a>
