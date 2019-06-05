@@ -222,14 +222,7 @@ var customel = (function () {
 
   function html(parts, ...args) {
     const template = parts.reduce((acc, part, i) => {
-      if (part === null) {
-        return {
-          events: acc.events,
-          string: ""
-        };
-      } // if no string put in first part
-
-
+      // if no string put in first part
       if (!acc.string) {
         return {
           events: acc.events,
@@ -238,6 +231,13 @@ var customel = (function () {
       }
 
       const arg = args[i - 1];
+
+      if (arg === null) {
+        return {
+          events: acc.events,
+          string: acc.string
+        };
+      }
 
       if (typeOf(arg) === "function") {
         // hash the function string to make an id
