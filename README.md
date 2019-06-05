@@ -1,6 +1,4 @@
-![Customel](/media/logo.png)
-
-<img src="/media/logo.png" />
+<img style="margin: 0 auto;" width="300px" align="center" src="/media/logo.png" />
 
 <p align="center">
 <a href="https://www.npmjs.com/package/customel"><img src="https://img.shields.io/npm/v/customel.svg" alt="Version"></a>
