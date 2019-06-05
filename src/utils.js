@@ -6,14 +6,6 @@ export function typeOf(value) {
     .toLowerCase();
 }
 
-// Hash a string - make an id of a string bascially
-export function hash(s) {
-  return s.split("").reduce(function(a, b) {
-    a = (a << 5) - a + b.charCodeAt(0);
-    return a & a;
-  }, 0);
-}
-
 export function uuid() {
   return (
     Math.random()
