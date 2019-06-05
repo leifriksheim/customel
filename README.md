@@ -209,17 +209,32 @@ customElement.define("my-accordion", customel(Accordion));
 This makes attributes available on your component.
 
 ```html
-<my-accordion title="My special list" open="true"></my-accordion>
+<my-accordion title="My special list" open></my-accordion>
 
 <script>
 
   const accordion = document.querySelector('my-accordion');
 
-  document.querySelector('my-accordion').addEventListener('click' => {
-    // "open" is a boolean, and can be changed by changing the attribute
-    const isOpen = accordion.getAttribute('open');
-    accordion.setAttribute('open', !!);
+  accordion.addEventListener("click" => {
+
+    if (accordion.hasAttribute("open")) {
+      accordion.removeAttribute("open");
+    } else {
+      accordion.setAttribute("open", "");
+    }
+
   })
+</script>
+```
+
+They will also be reflected as properties, so you could just do this as well:
+
+```html
+<my-accordion title="My special list" open></my-accordion>
+
+<script>
+  const accordion = document.querySelector("my-accordion");
+  accordion.open = !accordion.open;
 </script>
 ```
 
