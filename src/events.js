@@ -3,29 +3,45 @@ const events = [];
 export function bindEvents(selector, context) {
   // Regular event list
 
-  for (const el of selector.querySelectorAll(`[on${e}]`)) {
-    const id = el.getAttribute(`on${e}`);
-    el.removeAttribute(`on${e}`);
+  let eventNames = [...selector.querySelectorAll("*")].reduce(
+    (acc, element) => {
+      const attributes = element
+        .getAttributeNames()
+        .filter(attr => attr.startsWith("on"));
+      return [...acc, ...attributes];
+    },
+    []
+  );
 
-    let cached = events.find(event => event.el === el);
-    const newEvent = context[id];
+  eventNames.forEach(e => {
+    // e is for example 'onclick'
+    for (const el of selector.querySelectorAll(`[${e}]`)) {
+      const id = el.getAttribute(e);
+      el.removeAttribute(e);
 
-    if (cached) {
-      let cachedEvent = cached[e];
-      const isEqual = newEvent.toString() === cachedEvent.toString();
-      if (!isEqual) {
-        // if the cached function is not the same as the new one
-        // remove the old event listener and add new one
-        el.removeEventListener(e, cachedEvent);
-        cachedEvent = newEvent;
-        el.addEventListener(e, cachedEvent);
+      // get just 'click' for instance
+      const eventName = e.replace("on", "");
+
+      let cached = events.find(event => event.el === el);
+      const newEvent = context[id];
+
+      if (cached) {
+        let cachedEvent = cached[eventName];
+        const isEqual = newEvent.toString() === cachedEvent.toString();
+        if (!isEqual) {
+          // if the cached function is not the same as the new one
+          // remove the old event listener and add new one
+          el.removeEventListener(eventName, cachedEvent);
+          cachedEvent = newEvent;
+          el.addEventListener(eventName, cachedEvent);
+        }
+      } else {
+        // if no cached event, set the event to event cache
+        // and add event listener
+        events.push({ el, [eventName]: newEvent });
+
+        el.addEventListener(eventName, newEvent);
       }
-    } else {
-      // if no cached event, set the event to event cache
-      // and add event listener
-      events.push({ el, [e]: newEvent });
-
-      el.addEventListener(e, newEvent);
     }
-  }
+  });
 }
