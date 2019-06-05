@@ -9,6 +9,7 @@ export default function Customel({
   state = {},
   actions = {},
   mounted = () => {},
+  updated = () => {},
   propChanged = () => {},
   stateChanged = () => {},
   template = () => {},
@@ -46,6 +47,9 @@ export default function Customel({
 
       // mounted
       this.mounted = mounted.bind(this);
+
+      // updated
+      this.updated = updated.bind(this);
 
       // emit
       this.emit = this.emit.bind(this);
@@ -159,6 +163,7 @@ export default function Customel({
       const result = this._html`<style>${this._styles()}</style>${innerHTML}`;
       emerj.merge(this._shadowRoot, result.string);
       bindEvents(this._shadowRoot, { ...result.events, ...template.events });
+      this.updated();
     }
 
     setState(newState) {

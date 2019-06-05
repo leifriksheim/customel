@@ -280,6 +280,7 @@ function Customel({
   state = {},
   actions = {},
   mounted = () => {},
+  updated = () => {},
   propChanged = () => {},
   stateChanged = () => {},
   template = () => {},
@@ -319,7 +320,9 @@ function Customel({
       this._template = template.bind(this);
       this.render = this.render.bind(this); // mounted
 
-      this.mounted = mounted.bind(this); // emit
+      this.mounted = mounted.bind(this); // updated
+
+      this.updated = updated.bind(this); // emit
 
       this.emit = this.emit.bind(this);
     }
@@ -428,6 +431,7 @@ function Customel({
       bindEvents(this._shadowRoot, { ...result.events,
         ...template.events
       });
+      this.updated();
     }
 
     setState(newState) {
