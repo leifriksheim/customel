@@ -162,8 +162,6 @@ You can modify the state with the `this.setSate` function.
 
 ```js
 const Element = {
-  define: true
-  tag: "my-element",
   state: {
     active: false
   },
