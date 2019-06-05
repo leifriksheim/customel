@@ -12,7 +12,7 @@ export default {
       iife: pkg.main
     }[env],
     format: env,
-    name: "Customel"
+    name: "customel"
   },
   plugins: [
     resolve(),

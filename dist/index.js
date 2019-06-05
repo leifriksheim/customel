@@ -1,4 +1,4 @@
-var Customel = (function () {
+var customel = (function () {
   'use strict';
 
   const emerj = {

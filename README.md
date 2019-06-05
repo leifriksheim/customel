@@ -38,7 +38,7 @@ If you are using native ES Modules, you can include it in the index.html like th
 
 ```html
 <script type="module">
-  import Customel from "//unpkg.com/customel?module";
+  import customel from "//unpkg.com/customel?module";
 </script>
 ```
 
@@ -49,7 +49,7 @@ npm install customel
 ```
 
 ```js
-import Customel from "customel";
+import customel from "customel";
 ```
 
 ## Getting started
@@ -60,7 +60,7 @@ First create a file called `my-element.js`. Import Customel, create your compone
 
 ```js
 // my-element.js
-import Customel from "//unpkg.com/customel?module";
+import customel from "//unpkg.com/customel?module";
 
 const Element = {
   template() {
@@ -68,7 +68,7 @@ const Element = {
   }
 };
 
-customElements.define("my-element", Customel(Element));
+customElements.define("my-element", customel(Element));
 ```
 
 Create a `index.html` file, and import `my-element.js`.
@@ -202,7 +202,7 @@ const Accordion = {
   }
 };
 
-customElement.define("my-accordion", Customel(Accordion));
+customElement.define("my-accordion", customel(Accordion));
 ```
 
 This makes attributes available on your component.
@@ -244,7 +244,7 @@ const List = {
   }
 };
 
-customElement.define("my-list", Customel(List));
+customElement.define("my-list", customel(List));
 ```
 
 ```html
