@@ -6,14 +6,15 @@
   "module": "dist/index.es.js",
   "scripts": {
     "publish": "np",
+    "prepublish": "run-s clean && run-s buiild:*",
     "clean": "rimraf dist",
-    "dev": "run-p build:es:watch build:iife:watch",
-    "build": "run-s clean && run-p build:es build:iife && run-s build:min",
+    "dev": "run-p dev:*",
+    "build": "run-s clean && run-s build:*",
     "build:es": "NODE_ENV=es rollup -c",
     "build:iife": "NODE_ENV=iife rollup -c",
-    "build:es:watch": "NODE_ENV=es rollup -c --watch",
-    "build:iife:watch": "NODE_ENV=iife rollup -c --watch",
     "build:min": "uglifyjs dist/index.js -c -m -o dist/index.min.js",
+    "dev:es": "NODE_ENV=es rollup -c --watch",
+    "dev:iife": "NODE_ENV=iife rollup -c --watch",
     "precommit": "lint-staged"
   },
   "files": [
