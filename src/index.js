@@ -135,6 +135,7 @@ export default function Customel({
 
       // render
       this.render();
+
       // fire mounted hook
       this.mounted();
     }

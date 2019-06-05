@@ -144,8 +144,10 @@ const EVENTS_LIST = [];
 for (const key in document) {
   const isEvent = document[key] === null || typeof document[key] === "function";
   if (key.startsWith("on") && isEvent) EVENTS_LIST.push(key.substring(2));
-}
+} // slotchange doesnt show up in document??
 
+
+EVENTS_LIST.push("slotchange");
 const events = [];
 function bindEvents(selector, context) {
   // Regular event list
