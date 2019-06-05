@@ -17,7 +17,7 @@ Customel is just an experiment at the moment. Don't use in production.
 
 - **Lightweight 🕊️** Customel is a small wrapper around the HTMLElement Class and weight about **2kb**.
 - **Intuitive 💡** Create custom elements with familiar concepts borrowed from UI-libraries like React and Vue.
-- **Integrates with frameworks 💬** Create a pattern library with Customel, and use them with your favourite framework.
+- **Integrates with frameworks 🌐** Create a pattern library with Customel, and use them with your favourite framework.
 
 ## Introduction
 
