@@ -11,7 +11,7 @@ Customel is just an experiment at the moment. Don't use in production.
 
 > A tiny wrapper function to simplify the creation of Custom Elements/Web Components.
 
-- **Lightweight 🕊️** Customel is a small wrapper around the HTMLElement Class, and consists of around 180 LOC.
+- **Lightweight 🕊️** Customel is a small wrapper around the HTMLElement Class and weight about **2kb**.
 - **Intuitive 💡** Create custom elements with familiar concepts borrowed from UI-libraries like React and Vue.
 - **Fast rendering ⚡️** Customel uses [lighterhtml](https://github.com/WebReflection/lighterhtml) as the rendering engine for fast DOM-updates.
 - **Integrates with frameworks 💬** Create a pattern library with Customel, and use them with your favourite framework.
@@ -48,28 +48,31 @@ If you are using native ES Modules, you can include it in the index.html like th
 npm install customel
 ```
 
+```js
+import Customel from "customel";
+```
+
 ## Getting started
 
-The easiest way to try out Customel is using the [JSFiddle Hello World example](https://jsfiddle.net/waysofperception/zp2rd7s5/8/). You can follow the Quick Start from here.
+The easiest way to try out Customel is using the [JSFiddle Hello World example](https://jsfiddle.net/waysofperception/zp2rd7s5/10/). You can follow the Quick Start from here.
 
-To create a custom element – initiate a new Customel:
+First create a file called `my-element.js`. Import Customel, create your component, and define it.
 
 ```js
 // my-element.js
 import Customel from "//unpkg.com/customel?module";
 
-new Customel({
-  define: true,
-  tag: "my-element",
-  render: function(html) {
-    return html`
-      <div>Hello my new element!</div>
-    `;
+const Element = {
+  template() {
+    return "<div>Hello my new element!</div>";
   }
-});
+};
+
+customElements.define("my-element", Customel(Element));
 ```
 
-Import it in a html file, and your custom element is ready to use:
+Create a `index.html` file, and import `my-element.js`.
+Your custom element is now ready to be used!
 
 ```html
 <!--  index.html --->
@@ -85,68 +88,50 @@ Import it in a html file, and your custom element is ready to use:
 
 ## API
 
-### Define
-
-If you set `define` to `true` it will immediately register the component in the custom elements registery, and it will be available in the DOM right away.
-
-If define is false (as it is by default), then you must manually register it like this
-
-```js
-const Component = new Customel({
-  define: true
-  tag: "my-element"
-});
-
-customElements.define('my-component', Component)
-
-```
-
-### Tag
-
-The tag will be your component name.
-Custom Elements require a dash in the name, to distinguish it from a native HTML element:
-
-```js
-new Customel({
-  define: true
-  tag: "my-element"
-});
-```
-
-You can then use it on your html page with the name you gave it:
-
-```html
-<my-element></my-element>
-```
-
-### Render
+### Template
 
 You probably want to render some html inside your custom element.
-The render property returns a `html` function that we can use to display what we want.
-The `html` function is a tagged template that allows you to write regular HTML with template literals for fast DOM-updates without a Virtual DOM. Read more about [lighterhtml](https://github.com/WebReflection/lighterhtml) and how to use it, if you want to know more.
+The easiest way is to just return a string with some HTML like this:
 
 ```js
-new Customel({
-  define: true
-  tag: "my-element",
-  render: function(html) {
-    const elementName = "my-element";
+const Element = {
+  template() {
+    return "<div>HTML as a string</div>";
+  }
+};
+```
 
+This is not recommended if you wan't to add events to your component, or loop through a list.
+
+The template function also provides a `html` function that we can use.
+The `html` function is a tagged template that allows you to write regular HTML with template literals for fast DOM-updates without a Virtual DOM.
+
+```js
+const items = ["Item 1", "Item 2"];
+
+const Element = {
+  template: function(html) {
     return html`
-      <div>Hello ${elementName}!</div>
+      <button onclick=${() => alert("Clicked")}>Button</button>
+      <ul>
+        ${items.map(
+          item =>
+            html`
+              <li>${item}</li>
+            `
+        )}
+      </ul>
     `;
   }
-});
+};
 ```
 
 ### Styles
 
-To apply styles to your custom element, you can return CSS as a template literal:
+To apply styles to your custom element, you can return CSS as a string:
 
 ```js
-new Customel({
-  define: true
-  tag: "my-element",
+const Element = {
   state: {
     active: false
   },
@@ -158,12 +143,12 @@ new Customel({
       }
     `;
   },
-  render: function(html) {
+  template: function(html) {
     return html`
       <button>My button</button>
     `;
   }
-});
+};
 ```
 
 ### State
@@ -173,20 +158,20 @@ You can modify the state with the `this.setSate` function.
 `this.setState` will cause a rerender and you will get a fresh DOM with updated data.
 
 ```js
-new Customel({
+const Element = {
   define: true
   tag: "my-element",
   state: {
     active: false
   },
-  render: function(html) {
+  template: function(html) {
     return html`
       <button onclick=${() => this.setState({ active: true })}>
         Active state is ${this.state.active}
       </button>
     `;
   }
-});
+};
 ```
 
 ### Props
@@ -199,13 +184,11 @@ Always provide a default value to your props.
 If the default value is a `string`, `number` or a `boolean` then your prop will be available as an attribute on your custom element:
 
 ```js
-new Customel({
-  define: true,
-  tag: "my-accordion",
+const Accordion = {
   props: {
     open: false
   },
-  render: function(html) {
+  template: function(html) {
     return html`
       <div>
         <h1>Accordion title</h1>
@@ -217,7 +200,9 @@ new Customel({
       </div>
     `;
   }
-});
+};
+
+customElement.define("my-accordion", Customel(Accordion));
 ```
 
 This makes attributes available on your component.
@@ -242,13 +227,11 @@ This makes attributes available on your component.
 If the default value is a `function`, `object`, `array` or any other type of data, it will be available as a property on the element instead of an attribute.
 
 ```js
-new Customel({
-  define: true,
-  tag: "my-list",
+const List = {
   props: {
     todos: ["Buy milk", "Learn stuff"]
   },
-  render: function(html) {
+  template: function(html) {
     return html`
       <ul>
         ${this.props.todos.map(
@@ -259,7 +242,9 @@ new Customel({
       </ul>
     `;
   }
-});
+};
+
+customElement.define("my-list", Customel(List));
 ```
 
 ```html
@@ -275,22 +260,23 @@ new Customel({
 ### Actions
 
 ```js
-new Customel({
-  define: true,
-  tag: "my-element",
+const Element = {
+  props: {
+    title: "Title"
+  },
   actions: {
     showMessage() {
-      alert("My message!");
+      alert("Title: is" + this.title);
     }
   },
-  render: function(html) {
+  template: function(html) {
     return html`
       <button onclick=${() => this.actions.showMessage()}>
         My button
       </button>
     `;
   }
-});
+};
 ```
 
 ## Use in frameworks
@@ -327,5 +313,11 @@ For now you will also need to replace the whole array every time you update it's
 ```
 
 ### Angular
+
+Coming...
+
+### React
+
+Coming...
 
 Customel is [MIT licensed](./LICENSE).
