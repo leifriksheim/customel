@@ -57,7 +57,7 @@ import customel from "customel";
 
 ## Getting started
 
-The easiest way to try out Customel is using the [JSFiddle Hello World example](https://jsfiddle.net/waysofperception/zp2rd7s5/10/). You can follow the Quick Start from here.
+The easiest way to try out Customel is using the [JSFiddle Hello World example](https://jsfiddle.net/waysofperception/mL9nopdf/). You can follow the Quick Start from here.
 
 First create a file called `my-element.js`. Import Customel, create your component, and define it.
 
