@@ -35,8 +35,5 @@
     "rollup-plugin-filesize": "^6.0.1",
     "rollup-plugin-node-resolve": "^4.0.1",
     "uglify-es": "^3.3.9"
-  },
-  "dependencies": {
-    "lighterhtml": "^0.9.1"
   }
 }
