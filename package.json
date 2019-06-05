@@ -6,7 +6,7 @@
   "module": "dist/index.es.js",
   "scripts": {
     "publish": "np",
-    "prepublish": "run-s clean && run-s buiild:*",
+    "prepublish": "run-s clean && run-s build:*",
     "clean": "rimraf dist",
     "dev": "run-p dev:*",
     "build": "run-s clean && run-s build:*",
