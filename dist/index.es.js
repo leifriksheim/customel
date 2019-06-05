@@ -183,7 +183,7 @@ function bindEvents(selector, context) {
 // Return the true type of value
 function typeOf(value) {
   return Object.prototype.toString.call(value).slice(8, -1).toLowerCase();
-} // Hash a string - make an id of a string bascially
+}
 function uuid() {
   return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }
