@@ -139,47 +139,45 @@ const emerj = {
 
 };
 
-const EVENTS_LIST = [];
-
-for (const key in document) {
-  const isEvent = document[key] === null || typeof document[key] === "function";
-  if (key.startsWith("on") && isEvent) EVENTS_LIST.push(key.substring(2));
-} // slotchange doesnt show up in document??
-
-
-EVENTS_LIST.push("slotchange");
 const events = [];
 function bindEvents(selector, context) {
   // Regular event list
-  for (const e of EVENTS_LIST) {
-    for (const el of selector.querySelectorAll(`[on${e}]`)) {
-      const id = el.getAttribute(`on${e}`);
-      el.removeAttribute(`on${e}`);
+  let eventNames = [...selector.querySelectorAll("*")].reduce((acc, element) => {
+    const attributes = element.getAttributeNames().filter(attr => attr.startsWith("on"));
+    return [...acc, ...attributes];
+  }, []);
+  eventNames.forEach(e => {
+    // e is for example 'onclick'
+    for (const el of selector.querySelectorAll(`[${e}]`)) {
+      const id = el.getAttribute(e);
+      el.removeAttribute(e); // get just 'click' for instance
+
+      const eventName = e.replace("on", "");
       let cached = events.find(event => event.el === el);
       const newEvent = context[id];
 
       if (cached) {
-        let cachedEvent = cached[e];
+        let cachedEvent = cached[eventName];
         const isEqual = newEvent.toString() === cachedEvent.toString();
 
         if (!isEqual) {
           // if the cached function is not the same as the new one
           // remove the old event listener and add new one
-          el.removeEventListener(e, cachedEvent);
+          el.removeEventListener(eventName, cachedEvent);
           cachedEvent = newEvent;
-          el.addEventListener(e, cachedEvent);
+          el.addEventListener(eventName, cachedEvent);
         }
       } else {
         // if no cached event, set the event to event cache
         // and add event listener
         events.push({
           el,
-          [e]: newEvent
+          [eventName]: newEvent
         });
-        el.addEventListener(e, newEvent);
+        el.addEventListener(eventName, newEvent);
       }
     }
-  }
+  });
 }
 
 // Return the true type of value
@@ -270,16 +268,14 @@ function html(parts, ...args) {
 }
 
 function Customel({
-  tag = "my-element",
   mode = "open",
   props = {},
-  define = false,
   state = {},
   actions = {},
   mounted = () => {},
   propChanged = () => {},
   stateChanged = () => {},
-  render = () => {},
+  template = () => {},
   styles = () => ""
 }) {
   class Component extends HTMLElement {
@@ -306,14 +302,14 @@ function Customel({
       };
       this._initActions = this._initActions.bind(this);
 
-      this._initActions(); // render
+      this._initActions(); // temaplte
 
 
       this._shadowRoot = this.attachShadow({
         mode
       });
       this._html = html.bind(this);
-      this._template = render.bind(this);
+      this._template = template.bind(this);
       this.render = this.render.bind(this); // mounted
 
       this.mounted = mounted.bind(this); // emit
@@ -417,12 +413,13 @@ function Customel({
     }
 
     render() {
-      const temp = this._template(this._html);
+      const template = this._template(this._html);
 
-      const template = this._html`<style>${this._styles()}</style>${temp.string}`;
-      emerj.merge(this._shadowRoot, template.string);
-      bindEvents(this._shadowRoot, { ...template.events,
-        ...temp.events
+      const innerHTML = typeof template === "string" ? template : template.string;
+      const result = this._html`<style>${this._styles()}</style>${innerHTML}`;
+      emerj.merge(this._shadowRoot, result.string);
+      bindEvents(this._shadowRoot, { ...result.events,
+        ...template.events
       });
     }
 
@@ -444,10 +441,6 @@ function Customel({
       }));
     }
 
-  }
-
-  if (define) {
-    customElements.define(tag, Component);
   }
 
   return Component;
