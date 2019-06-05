@@ -4,16 +4,14 @@ import { typeOf, kebabCase, camelCase, typeCast } from "./utils.js";
 import { html } from "./html.js";
 
 export default function Customel({
-  tag = "my-element",
   mode = "open",
   props = {},
-  define = false,
   state = {},
   actions = {},
   mounted = () => {},
   propChanged = () => {},
   stateChanged = () => {},
-  render = () => {},
+  template = () => {},
   styles = () => ""
 }) {
   class Component extends HTMLElement {
@@ -40,10 +38,10 @@ export default function Customel({
       this._initActions = this._initActions.bind(this);
       this._initActions();
 
-      // render
+      // temaplte
       this._shadowRoot = this.attachShadow({ mode });
       this._html = html.bind(this);
-      this._template = render.bind(this);
+      this._template = template.bind(this);
       this.render = this.render.bind(this);
 
       // mounted
@@ -155,12 +153,12 @@ export default function Customel({
     }
 
     render() {
-      const temp = this._template(this._html);
-      const template = this._html`<style>${this._styles()}</style>${
-        temp.string
-      }`;
-      emerj.merge(this._shadowRoot, template.string);
-      bindEvents(this._shadowRoot, { ...template.events, ...temp.events });
+      const template = this._template(this._html);
+      const innerHTML =
+        typeof template === "string" ? template : template.string;
+      const result = this._html`<style>${this._styles()}</style>${innerHTML}`;
+      emerj.merge(this._shadowRoot, result.string);
+      bindEvents(this._shadowRoot, { ...result.events, ...template.events });
     }
 
     setState(newState) {
@@ -176,10 +174,5 @@ export default function Customel({
       );
     }
   }
-
-  if (define) {
-    customElements.define(tag, Component);
-  }
-
   return Component;
 }
