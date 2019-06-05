@@ -222,7 +222,14 @@ var customel = (function () {
 
   function html(parts, ...args) {
     const template = parts.reduce((acc, part, i) => {
-      // if no string put in first part
+      if (part === null) {
+        return {
+          events: acc.events,
+          string: ""
+        };
+      } // if no string put in first part
+
+
       if (!acc.string) {
         return {
           events: acc.events,
