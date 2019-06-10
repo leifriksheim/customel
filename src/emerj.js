@@ -1,5 +1,19 @@
 const emerj = {
+  bindEvent(elem, eventAttr, event) {
+    const eventType = eventAttr.slice(2).toLowerCase();
+    elem.__handlers = elem.__handlers || {};
+    const isSameFunction = elem.__handlers[eventType]
+      ? elem.__handlers[eventType].toString() === event.toString()
+      : false;
+    if (!isSameFunction) {
+      elem.removeEventListener(eventType, elem.__handlers[eventType]);
+      elem.__handlers[eventType] = event;
+      elem.addEventListener(eventType, elem.__handlers[eventType]);
+    }
+    elem.removeAttribute(eventAttr);
+  },
   attrs(elem) {
+    if (!elem.attributes) return {};
     const attrs = {};
     for (let i = 0; i < elem.attributes.length; i++) {
       const attr = elem.attributes[i];
@@ -68,8 +82,20 @@ const emerj = {
     let idx;
     for (idx = 0; modified.firstChild; idx++) {
       const newNode = modified.removeChild(modified.firstChild);
+
       if (idx >= base.childNodes.length) {
-        // It's a new node. Append it.
+        // It's a new node. Add event listeners if any and, append it.
+
+        const newAttrs = this.attrs(newNode);
+
+        for (const attr in newAttrs) {
+          // add event listeners
+          if (attr.startsWith("on")) {
+            this.bindEvent(newNode, attr, events[newAttrs[attr]]);
+            continue;
+          }
+        }
+
         base.appendChild(newNode);
         continue;
       }
@@ -119,26 +145,8 @@ const emerj = {
             continue;
 
           // add event listeners
-          // TODO: Make setAttr function
           if (attr.startsWith("on")) {
-            const eventType = attr.slice(2).toLowerCase();
-            baseNode.__handlers = baseNode.__handlers || {};
-            const isSameFunction = baseNode.__handlers[eventType]
-              ? baseNode.__handlers[eventType].toString() ===
-                events[attrs.new[attr]].toString()
-              : false;
-            if (!isSameFunction) {
-              baseNode.removeEventListener(
-                eventType,
-                baseNode.__handlers[eventType]
-              );
-              baseNode.__handlers[eventType] = events[attrs.new[attr]];
-              baseNode.addEventListener(
-                eventType,
-                baseNode.__handlers[eventType]
-              );
-            }
-            baseNode.removeAttribute(attr);
+            this.bindEvent(baseNode, attr, events[attrs.new[attr]]);
             continue;
           }
 
