@@ -1,5 +1,4 @@
 import emerj from "./emerj.js";
-import { bindEvents } from "./events.js";
 import { typeOf, kebabCase, camelCase, typeCast } from "./utils.js";
 import { html } from "./html.js";
 
@@ -161,8 +160,7 @@ export default function Customel({
       const innerHTML =
         typeof template === "string" ? template : template.string;
       const result = this._html`<style>${this._styles()}</style>${innerHTML}`;
-      emerj.merge(this._shadowRoot, result.string);
-      bindEvents(this._shadowRoot, { ...result.events, ...template.events });
+      emerj.merge(this._shadowRoot, result.string, {}, template.events);
       this.updated();
     }
 

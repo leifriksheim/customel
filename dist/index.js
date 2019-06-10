@@ -24,7 +24,7 @@ var customel = (function () {
       return map;
     },
 
-    merge(base, modified, opts) {
+    merge(base, modified, opts, events) {
       /* Merge any differences between base and modified back into base.
        *
        * Operates only the children nodes, and does not change the root node or its
@@ -124,13 +124,30 @@ var customel = (function () {
 
           for (const attr in attrs.new) {
             // Add and update any new or modified attributes.
-            if (attr in attrs.base && attrs.base[attr] === attrs.new[attr]) continue;
+            if (attr in attrs.base && attrs.base[attr] === attrs.new[attr]) continue; // add event listeners
+            // TODO: Make setAttr function
+
+            if (attr.startsWith("on")) {
+              const eventType = attr.slice(2).toLowerCase();
+              baseNode.__handlers = baseNode.__handlers || {};
+              const isSameFunction = baseNode.__handlers[eventType] ? baseNode.__handlers[eventType].toString() === events[attrs.new[attr]].toString() : false;
+
+              if (!isSameFunction) {
+                baseNode.removeEventListener(eventType, baseNode.__handlers[eventType]);
+                baseNode.__handlers[eventType] = events[attrs.new[attr]];
+                baseNode.addEventListener(eventType, baseNode.__handlers[eventType]);
+              }
+
+              baseNode.removeAttribute(attr);
+              continue;
+            }
+
             baseNode.setAttribute(attr, attrs.new[attr]);
           } // Now, recurse into the children. If the only children are text, this will
           // be the final recursion on this node.
 
 
-          this.merge(baseNode, newNode);
+          this.merge(baseNode, newNode, {}, events);
         }
       }
 
@@ -141,47 +158,6 @@ var customel = (function () {
     }
 
   };
-
-  const events = [];
-  function bindEvents(selector, context) {
-    // Regular event list
-    let eventNames = [...selector.querySelectorAll("*")].reduce((acc, element) => {
-      const attributes = element.getAttributeNames().filter(attr => attr.startsWith("on"));
-      return [...acc, ...attributes];
-    }, []);
-    eventNames.forEach(e => {
-      // e is for example 'onclick'
-      for (const el of selector.querySelectorAll(`[${e}]`)) {
-        const id = el.getAttribute(e);
-        el.removeAttribute(e); // get just 'click' for instance
-
-        const eventName = e.replace("on", "");
-        let cached = events.find(event => event.el === el);
-        const newEvent = context[id];
-
-        if (cached) {
-          let cachedEvent = cached[eventName];
-          const isEqual = newEvent.toString() === cachedEvent.toString();
-
-          if (!isEqual) {
-            // if the cached function is not the same as the new one
-            // remove the old event listener and add new one
-            el.removeEventListener(eventName, cachedEvent);
-            cachedEvent = newEvent;
-            el.addEventListener(eventName, cachedEvent);
-          }
-        } else {
-          // if no cached event, set the event to event cache
-          // and add event listener
-          events.push({
-            el,
-            [eventName]: newEvent
-          });
-          el.addEventListener(eventName, newEvent);
-        }
-      }
-    });
-  }
 
   // Return the true type of value
   function typeOf(value) {
@@ -430,10 +406,7 @@ var customel = (function () {
 
         const innerHTML = typeof template === "string" ? template : template.string;
         const result = this._html`<style>${this._styles()}</style>${innerHTML}`;
-        emerj.merge(this._shadowRoot, result.string);
-        bindEvents(this._shadowRoot, { ...result.events,
-          ...template.events
-        });
+        emerj.merge(this._shadowRoot, result.string, {}, template.events);
         this.updated();
       }
 

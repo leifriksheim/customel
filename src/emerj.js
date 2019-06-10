@@ -15,7 +15,7 @@ const emerj = {
     }
     return map;
   },
-  merge(base, modified, opts) {
+  merge(base, modified, opts, events) {
     /* Merge any differences between base and modified back into base.
      *
      * Operates only the children nodes, and does not change the root node or its
@@ -110,17 +110,43 @@ const emerj = {
         for (const attr in attrs.base) {
           // Remove any missing attributes.
           if (attr in attrs.new) continue;
+
           baseNode.removeAttribute(attr);
         }
         for (const attr in attrs.new) {
           // Add and update any new or modified attributes.
           if (attr in attrs.base && attrs.base[attr] === attrs.new[attr])
             continue;
+
+          // add event listeners
+          // TODO: Make setAttr function
+          if (attr.startsWith("on")) {
+            const eventType = attr.slice(2).toLowerCase();
+            baseNode.__handlers = baseNode.__handlers || {};
+            const isSameFunction = baseNode.__handlers[eventType]
+              ? baseNode.__handlers[eventType].toString() ===
+                events[attrs.new[attr]].toString()
+              : false;
+            if (!isSameFunction) {
+              baseNode.removeEventListener(
+                eventType,
+                baseNode.__handlers[eventType]
+              );
+              baseNode.__handlers[eventType] = events[attrs.new[attr]];
+              baseNode.addEventListener(
+                eventType,
+                baseNode.__handlers[eventType]
+              );
+            }
+            baseNode.removeAttribute(attr);
+            continue;
+          }
+
           baseNode.setAttribute(attr, attrs.new[attr]);
         }
         // Now, recurse into the children. If the only children are text, this will
         // be the final recursion on this node.
-        this.merge(baseNode, newNode);
+        this.merge(baseNode, newNode, {}, events);
       }
     }
     while (base.childNodes.length > idx) {
