@@ -33,31 +33,39 @@ Customel is not meant to be a way to build software or large applications. It is
 
 ## Installation
 
-### CDN
+<details>
+  <summary>CDN</summary>
+  
+  Create an index.html file and include Customel with the CDN:
 
-Create an index.html file and include Customel with the CDN:
+  ```html
+  <script src="https://unpkg.com/customel"></script>
+  ```
 
-```html
-<script src="https://unpkg.com/customel"></script>
-```
+  If you are using native ES Modules, you can include it in the index.html like this:
 
-If you are using native ES Modules, you can include it in the index.html like this:
+  ```html
+  <script type="module">
+    import customel from "//unpkg.com/customel?module";
+  </script>
+  ```
+</details>
 
-```html
-<script type="module">
-  import customel from "//unpkg.com/customel?module";
-</script>
-```
 
-### NPM
+<details>
 
-```
-npm install customel
-```
+  <summary>NPM</summary>
+  
+  ```
+  npm install customel
+  ```
 
-```js
-import customel from "customel";
-```
+  ```js
+  import customel from "customel";
+  ```
+
+</details>
+
 
 ## Getting started
 
