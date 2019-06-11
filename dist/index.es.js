@@ -231,7 +231,7 @@ function html(parts, ...args) {
     if (arg === null || arg === false) {
       return {
         events: acc.events,
-        string: acc.string
+        string: acc.string + part
       };
     }
 
