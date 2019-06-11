@@ -11,6 +11,12 @@
 
 > A tiny helper function for creating web components
 
+<div>
+  <img style="margin: 0 auto;" width="500px" align="center" src="/media/screenshot.png" />
+</div>
+
+## Highlights
+
 - [Only 2kb](https://bundlephobia.com/result?p=customel@latest) 🕊️
 - Use tagged templates to render html 💡
 - Write standards-compliant web components 🌍
