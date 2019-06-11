@@ -100,7 +100,6 @@ var customel = (function () {
             // add event listeners
             if (attr.startsWith("on")) {
               this.bindEvent(newNode, attr, events[newAttrs[attr]]);
-              continue;
             }
           }
 
@@ -126,6 +125,15 @@ var customel = (function () {
 
         if (baseNode.nodeType !== newNode.nodeType || baseNode.tagName !== newNode.tagName) {
           // Completely different node types. Just update the whole subtree, like React does.
+          const newAttrs = this.attrs(newNode);
+
+          for (const attr in newAttrs) {
+            // add event listeners
+            if (attr.startsWith("on")) {
+              this.bindEvent(newNode, attr, events[newAttrs[attr]]);
+            }
+          }
+
           base.replaceChild(newNode, baseNode);
         } else if ([Node.TEXT_NODE, Node.COMMENT_NODE].indexOf(baseNode.nodeType) >= 0) {
           // This is the terminating case of the merge() recursion.
@@ -152,7 +160,8 @@ var customel = (function () {
             if (attr in attrs.base && attrs.base[attr] === attrs.new[attr]) continue; // add event listeners
 
             if (attr.startsWith("on")) {
-              this.bindEvent(baseNode, attr, events[attrs.new[attr]]);
+              this.bindEvent(baseNode, attr, events[attrs.new[attr]]); // contine so we don't set the attribute
+
               continue;
             }
 
@@ -252,6 +261,15 @@ var customel = (function () {
             ...allEvents
           },
           string: acc.string + string + part
+        };
+      }
+
+      if (typeOf(arg) === "object") {
+        return {
+          events: { ...acc.events,
+            ...arg.events
+          },
+          string: acc.string + arg.string + part
         };
       }
 
