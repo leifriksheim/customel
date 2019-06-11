@@ -12,7 +12,7 @@
 > A tiny helper function for creating web components
 
 <div>
-  <img style="margin: 0 auto;" width="100%" align="center" src="/media/screenshot.png" />
+  <img width="500px"  src="/media/screenshot1.png" />
 </div>
 
 ## Highlights
