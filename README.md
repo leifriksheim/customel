@@ -9,7 +9,7 @@
 <a href="https://www.npmjs.com/package/customel"><img src="https://img.shields.io/npm/l/customel.svg" alt="License"></a>
 </p>
 
-> A tiny helper function for creating web components
+> A tiny helper function for creating Web Components
 
 <div>
   <img width="600px"  src="/media/screenshot.png" />
@@ -19,7 +19,7 @@
 
 - [Only 2kb](https://bundlephobia.com/result?p=customel@latest) 🕊️
 - Use tagged templates to render html 💡
-- Write standards-compliant web components 🌍
+- Write standards-compliant Web Components 🌍
 - Use with Vue, React, Angular and friends 🤝
 - Very easy API 🚴
 
@@ -27,9 +27,9 @@
 
 Custom elements are awesome. They make it possible for everybody to use your components, no matter which new javascript framework they are using. As a part of the native web platform they are a great way to build maintainable and long lasting UI-libraries.
 
-Still, writing custom elements from scratch can require quite a lot of boiler plate. Customel is a small wrapper around the api that reduces a lot of the boiler plate, enforces some best practises, and makes it easier to make new custom elements.
+Still, writing Web Components from scratch can require quite a lot of boiler plate. Customel is a small wrapper around the `HTMLElement` class that reduces a lot of the boiler plate, enforces some best practises, and makes it easier to make new custom elements.
 
-Customel is not meant to be a way to build software or large applications. It is built as a way to create small, reusable custom elements.
+Customel is not meant to be a way to build software or large applications. It is built as a way to create small, reusable Web Components.
 
 ## Installation
 
