@@ -17,8 +17,8 @@
 
 ## Highlights
 
-- [Only 2kb](https://bundlephobia.com/result?p=customel@latest) 🕊️
-- Use tagged templates to render html 💡
+- Zero dependencies, [only 2kb](https://bundlephobia.com/result?p=customel@latest) 🕊️
+- Template literals as templating engine 💡
 - Write standards-compliant Web Components 🌍
 - Use with Vue, React, Angular and friends 🤝
 - Very easy API 🚴
