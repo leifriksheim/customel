@@ -98,7 +98,7 @@ Your custom element is now ready to be used!
 ### Template
 
 You probably want to render some html inside your custom element.
-The easiest way is to just return a string with some HTML like this:
+The easiest way to do this is to just return a string with some HTML:
 
 ```js
 const Element = {
@@ -108,10 +108,7 @@ const Element = {
 };
 ```
 
-This is not recommended if you wan't to add events to your component, or loop through a list.
-
-The template function also provides a `html` function that we can use.
-The `html` function is a tagged template that allows you to write regular HTML with template literals for fast DOM-updates without a Virtual DOM.
+The `template` function also provides a template literal called `html` that we can use when we want to add event handlers to the component, or we want to loop through a list.
 
 ```js
 const items = ["Item 1", "Item 2"];
