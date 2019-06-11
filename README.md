@@ -23,14 +23,6 @@
 - Use with Vue, React, Angular and friends 🤝
 - Small and easy API 🚴
 
-## Introduction
-
-Custom elements are awesome. They make it possible for everybody to use your components, no matter which new javascript framework they are using. As a part of the native web platform they are a great way to build maintainable and long lasting UI-libraries.
-
-Still, writing Web Components from scratch can require quite a lot of boiler plate. Customel is a small wrapper around the `HTMLElement` class that reduces a lot of the boiler plate, enforces some best practises, and makes it easier to make new custom elements.
-
-Customel is not meant to be a way to build software or large applications. It is built as a way to create small, reusable Web Components.
-
 ## Installation
 
 <details>
@@ -65,6 +57,14 @@ Customel is not meant to be a way to build software or large applications. It is
   ```
 
 </details>
+
+## Introduction
+
+Custom elements are awesome. They make it possible for everybody to use your components, no matter which new javascript framework they are using. As a part of the native web platform they are a great way to build maintainable and long lasting UI-libraries.
+
+Still, writing Web Components from scratch can require quite a lot of boiler plate. Customel is a small wrapper around the `HTMLElement` class that reduces a lot of the boiler plate, enforces some best practises, and makes it easier to make new custom elements.
+
+Customel is not meant to be a way to build software or large applications. It is built as a way to create small, reusable Web Components.
 
 
 ## Getting started
