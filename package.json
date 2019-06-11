@@ -1,6 +1,6 @@
 {
   "name": "customel",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "A tiny helper function for creating Web Components",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
