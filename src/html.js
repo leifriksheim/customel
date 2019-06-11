@@ -10,7 +10,7 @@ export function html(parts, ...args) {
 
       const arg = args[i - 1];
 
-      if (arg === null) {
+      if (arg === null || arg === false || arg === "" || arg === undefined) {
         return {
           events: acc.events,
           string: acc.string

@@ -136,20 +136,68 @@ To apply styles to your custom element, you can return CSS as a string:
 
 ```js
 const Element = {
-  state: {
-    active: false
-  },
   styles() {
     return `
       button {
-        background-color: ${this.state.active ? "black" : "white"};
-        color: ${this.state.active ? "white" : "black"};
+        background-color: red;
+        color: white;
       }
     `;
   },
   template: function(html) {
     return html`
       <button>My button</button>
+    `;
+  }
+};
+```
+
+You can also use props or state to render styles conditionally.
+
+```js
+const Element = {
+  props: {
+    active: false
+  },
+  styles() {
+    return `
+      button {
+        background-color: ${this.props.active ? "red" : "blue"};
+        color: white;
+      }
+    `;
+  },
+  template: function(html) {
+    return html`
+      <button>My button</button>
+    `;
+  }
+};
+```
+
+This will however cause a rerender of the whole internal stylesheet of the component. So it is adviced to toggle classes based on props or state instead:
+
+```js
+const Element = {
+  props: {
+    active: false
+  },
+  styles() {
+    return `
+      button {
+        background-color: blue;
+        color: white;
+      }
+      button.active {
+        background-color: red;
+      }
+    `;
+  },
+  template: function(html) {
+    const buttonClass = this.props.active ? "active" : null;
+
+    return html`
+      <button class=${buttonClass}>My button</button>
     `;
   }
 };
