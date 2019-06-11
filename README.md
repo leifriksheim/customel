@@ -12,7 +12,7 @@
 > A tiny helper function for creating web components
 
 <div>
-  <img width="500px"  src="/media/screenshot1.png" />
+  <img width="600px"  src="/media/screenshot.png" />
 </div>
 
 ## Highlights
