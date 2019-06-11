@@ -101,7 +101,7 @@ Your custom element is now ready to be used!
 </html>
 ```
 
-## API
+## Documentation
 
 ### Template
 
