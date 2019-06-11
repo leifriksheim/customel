@@ -92,7 +92,6 @@ const emerj = {
           // add event listeners
           if (attr.startsWith("on")) {
             this.bindEvent(newNode, attr, events[newAttrs[attr]]);
-            continue;
           }
         }
 
@@ -147,6 +146,7 @@ const emerj = {
           // add event listeners
           if (attr.startsWith("on")) {
             this.bindEvent(baseNode, attr, events[attrs.new[attr]]);
+            // contine so we don't set the attribute
             continue;
           }
 

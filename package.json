@@ -1,9 +1,16 @@
 {
   "name": "customel",
   "version": "0.2.6",
-  "description": "A tiny wrapper function to simplify the creation of Custom Elements/Web Components.",
+  "description": "A tiny helper function for creating web components",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
+  "author": "Leif Riksheim",
+  "license": "MIT",
+  "repository": "leifriksheim/customel",
+  "homepage": "https://github.com/leifriksheim/customel",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "publish": "np",
     "prepublish": "run-s clean && run-s build:*",
@@ -17,12 +24,6 @@
     "dev:iife": "NODE_ENV=iife rollup -c --watch",
     "precommit": "lint-staged"
   },
-  "files": [
-    "dist"
-  ],
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.3.4",
     "@babel/plugin-external-helpers": "^7.0.0",
@@ -35,5 +36,17 @@
     "rollup-plugin-filesize": "^6.0.1",
     "rollup-plugin-node-resolve": "^4.0.1",
     "uglify-es": "^3.3.9"
-  }
+  },
+  "keywords": [
+    "custom elements",
+    "web components",
+    "customel",
+    "react",
+    "vue",
+    "lit-element",
+    "lit-html",
+    "alternative",
+    "template",
+    "literals"
+  ]
 }
