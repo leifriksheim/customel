@@ -9,15 +9,13 @@
 <a href="https://www.npmjs.com/package/customel"><img src="https://img.shields.io/npm/l/customel.svg" alt="License"></a>
 </p>
 
-```
-Customel is just an experiment at the moment. Don't use in production.
-```
+> A tiny helper function for creating web components
 
-> A tiny wrapper function to simplify the creation of Custom Elements/Web Components.
-
-- **Lightweight 🕊️** Customel is a small wrapper around the HTMLElement Class and weight about **2kb**.
-- **Intuitive 💡** Create custom elements with familiar concepts borrowed from UI-libraries like React and Vue.
-- **Integrates with frameworks 🌍** Create a pattern library with Customel, and use them with your favourite framework.
+- [Only 2kb](https://bundlephobia.com/result?p=customel@latest) 🕊️
+- Use tagged templates to render html 💡
+- Write standards-compliant web components 🌍
+- Use with Vue, React, Angular and friends 🤝
+- Very easy API 🚴
 
 ## Introduction
 
