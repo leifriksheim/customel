@@ -21,7 +21,7 @@
 - Template literals as templating engine 💡
 - Write standards-compliant Web Components 🌍
 - Use with Vue, React, Angular and friends 🤝
-- Very easy API 🚴
+- Small and easy API 🚴
 
 ## Introduction
 
