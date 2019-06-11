@@ -120,6 +120,14 @@ const emerj = {
         baseNode.tagName !== newNode.tagName
       ) {
         // Completely different node types. Just update the whole subtree, like React does.
+        const newAttrs = this.attrs(newNode);
+
+        for (const attr in newAttrs) {
+          // add event listeners
+          if (attr.startsWith("on")) {
+            this.bindEvent(newNode, attr, events[newAttrs[attr]]);
+          }
+        }
         base.replaceChild(newNode, baseNode);
       } else if (
         [Node.TEXT_NODE, Node.COMMENT_NODE].indexOf(baseNode.nodeType) >= 0
