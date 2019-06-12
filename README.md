@@ -23,6 +23,19 @@
 - Use with Vue, React, Angular and friends 🤝
 - Small and easy API 🚴
 
+## Table of contents
+
+* [Installation](#installation)
+* [Introduction](#introduction)
+* [Getting started](#getting-started)
+* [Documentation](#documentation)
+  * [Template](#template)
+  * [Styles](#styles)
+  * [State](#state)
+  * [Props](#props)
+  * [Actions](#actions)
+
+
 ## Installation
 
 <details>
