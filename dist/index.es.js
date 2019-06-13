@@ -2,14 +2,14 @@ const emerj = {
   bindEvent(elem, eventAttr, event) {
     const eventType = eventAttr.slice(2).toLowerCase();
     elem.__handlers = elem.__handlers || {};
-    const isSameFunction = elem.__handlers[eventType] ? elem.__handlers[eventType].toString() === event.toString() : false;
+    const existingEvent = elem.__handlers[eventType];
 
-    if (!isSameFunction) {
-      elem.removeEventListener(eventType, elem.__handlers[eventType]);
-      elem.__handlers[eventType] = event;
-      elem.addEventListener(eventType, elem.__handlers[eventType]);
+    if (existingEvent) {
+      elem.removeEventListener(eventType, existingEvent);
     }
 
+    elem.__handlers[eventType] = event;
+    elem.addEventListener(eventType, elem.__handlers[eventType]);
     elem.removeAttribute(eventAttr);
   },
 
@@ -128,6 +128,19 @@ const emerj = {
           // add event listeners
           if (attr.startsWith("on")) {
             this.bindEvent(newNode, attr, events[newAttrs[attr]]);
+          }
+        }
+
+        const allNodes = baseNode.querySelectorAll("*");
+
+        for (const node in allNodes) {
+          const nodeAttrs = this.attrs(node);
+
+          for (const attr in nodeAttrs) {
+            // add event listeners
+            if (attr.startsWith("on")) {
+              this.bindEvent(node, attr, events[newAttrs[attr]]);
+            }
           }
         }
 
