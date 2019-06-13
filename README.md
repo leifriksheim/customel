@@ -23,6 +23,54 @@
 - Use with Vue, React, Angular and friends 🤝
 - Small and easy API 🚴
 
+## Table of contents
+
+* [Installation](#installation)
+* [Introduction](#introduction)
+* [Getting started](#getting-started)
+* [Documentation](#documentation)
+  * [Template](#template)
+  * [Styles](#styles)
+  * [State](#state)
+  * [Props](#props)
+  * [Actions](#actions)
+
+
+## Installation
+
+<details>
+  <summary>CDN</summary>
+  
+  Create an index.html file and include Customel with the CDN:
+
+  ```html
+  <script src="https://unpkg.com/customel"></script>
+  ```
+
+  If you are using native ES Modules, you can include it in the index.html like this:
+
+  ```html
+  <script type="module">
+    import customel from "//unpkg.com/customel?module";
+  </script>
+  ```
+</details>
+
+
+<details>
+
+  <summary>NPM</summary>
+  
+  ```
+  npm install customel
+  ```
+
+  ```js
+  import customel from "customel";
+  ```
+
+</details>
+
 ## Introduction
 
 Custom elements are awesome. They make it possible for everybody to use your components, no matter which new javascript framework they are using. As a part of the native web platform they are a great way to build maintainable and long lasting UI-libraries.
@@ -31,33 +79,6 @@ Still, writing Web Components from scratch can require quite a lot of boiler pla
 
 Customel is not meant to be a way to build software or large applications. It is built as a way to create small, reusable Web Components.
 
-## Installation
-
-### CDN
-
-Create an index.html file and include Customel with the CDN:
-
-```html
-<script src="https://unpkg.com/customel"></script>
-```
-
-If you are using native ES Modules, you can include it in the index.html like this:
-
-```html
-<script type="module">
-  import customel from "//unpkg.com/customel?module";
-</script>
-```
-
-### NPM
-
-```
-npm install customel
-```
-
-```js
-import customel from "customel";
-```
 
 ## Getting started
 
@@ -93,7 +114,7 @@ Your custom element is now ready to be used!
 </html>
 ```
 
-## API
+## Documentation
 
 ### Template
 
