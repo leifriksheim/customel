@@ -1,4 +1,4 @@
-import { typeOf, uuid } from "./utils.js";
+import { typeOf, uuid, sanitizeHTML } from "./utils.js";
 
 export function html(parts, ...args) {
   const template = parts.reduce(
@@ -42,6 +42,15 @@ export function html(parts, ...args) {
         return {
           events: { ...acc.events, ...arg.events },
           string: acc.string + arg.string + part
+        };
+      }
+
+      if (typeOf(arg) === "string") {
+        const sanitizedHTML = sanitizeHTML(arg);
+
+        return {
+          events: { ...acc.events, ...arg.events },
+          string: acc.string + sanitizedHTML + part
         };
       }
 

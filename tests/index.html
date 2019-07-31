@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+    <script type="module">
+      import { html, prop, value, onMounted, Component } from "../dist/index.es.js";
+
+      function increment(count) {
+        return count.value++;
+      }
+
+      function MyElement() {
+        const count = value(0);
+
+        return html`
+          ${count.value}
+          <button onclick="${() => increment(count)}">Button</button>
+        `;
+      }
+
+      customElements.define("my-element", new Component(MyElement));
+    </script>
+  </head>
+  <body>
+    <my-element></my-element>
+  </body>
+</html>

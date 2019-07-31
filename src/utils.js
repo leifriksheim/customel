@@ -6,6 +6,12 @@ export function typeOf(value) {
     .toLowerCase();
 }
 
+export function sanitizeHTML(string) {
+  var temp = document.createElement("div");
+  temp.textContent = string;
+  return temp.innerHTML;
+}
+
 export function uuid() {
   return (
     Math.random()
@@ -56,4 +62,25 @@ export function typeCast(value, type) {
   }
 
   return value;
+}
+
+export function onChange(object, onChange) {
+  const handler = {
+    get(target, property, receiver) {
+      try {
+        return new Proxy(target[property], handler);
+      } catch (err) {
+        return Reflect.get(target, property, receiver);
+      }
+    },
+    defineProperty(target, property, descriptor) {
+      onChange(descriptor);
+      return Reflect.defineProperty(target, property, descriptor);
+    },
+    deleteProperty(target, property) {
+      onChange();
+      return Reflect.deleteProperty(target, property);
+    }
+  };
+  return new Proxy(object, handler);
 }

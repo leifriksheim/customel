@@ -1,7 +1,158 @@
 import emerj from "./emerj.js";
-import { typeOf, kebabCase, camelCase, typeCast } from "./utils.js";
-import { html } from "./html.js";
+import { typeOf, onChange, kebabCase, camelCase, typeCast } from "./utils.js";
 
+import { html as htmlTemplateLiteral } from "./html.js";
+
+let components = {}
+let componentCount = 0;
+let currentComponentId = 0;
+
+// export tagged template literal
+export const html = htmlTemplateLiteral;
+
+// on mounted
+export function onMounted(callback) {
+
+  const component = components[currentComponentId]
+
+  if (component.isMounting) return callback();
+
+  return;
+}
+
+// function to declare a property
+export function prop(name, value) {
+
+  const component = components[currentComponentId];
+
+  const camelName = camelCase(name);
+
+  if (component.props[camelName] !== undefined) {
+    return component.props[camelName];
+  } else {
+    component.props[camelName] = value;
+    return component.props[camelName];
+  }
+}
+
+// function to declare a value
+export function value(val) {
+
+  const component = components[currentComponentId];
+  const valueCount = component.valuesCounter;
+  const finalAmountofValues = component.finalAmountofValues;
+
+  component.valuesCounter++;
+
+  if (!finalAmountofValues) {
+    component.values[valueCount] = onChange({ value: val }, newVal => {
+      console.log('changed')
+      if (component.this) {
+
+        // TODO: Do some async magic here?
+        setTimeout(() => {
+          component.this.render();
+        }, 0);
+      }
+    });
+    return component.values[valueCount];
+  }
+
+  return component.values[valueCount % finalAmountofValues];
+}
+
+export function Component(template) {
+
+  // save a refernece to the component count
+  const componentId = componentCount;
+  currentComponentId = componentId;
+
+  // initialize component with empty values
+  components = {
+    ...components,
+    [componentId]: { this: null, props: {}, values: [], valuesCounter: 0, finalAmountofValues: null, isMounting: false  }
+  };
+
+  componentCount++;
+
+  template();
+
+  components[componentId].finalAmountofValues = components[componentId].valuesCounter;
+
+  class Element extends HTMLElement {
+    constructor() {
+      super();
+
+      this._shadowRoot = this.attachShadow({ mode: "open" });
+      this._upradeProperty = this._upradeProperty.bind(this)
+
+      this.html = html.bind(this);
+
+      this.template = template.bind(this);
+
+      components[componentId].this = this;
+
+      this.render = this.render.bind(this);
+    }
+
+    static get observedAttributes() {
+      Object.keys(components[componentId].props).forEach(propName => {
+        Object.defineProperty(this.prototype, propName, {
+          configurable: true,
+          get() {
+            return components[componentId].props[propName];
+          },
+          set(newVal) {
+            components = {
+              ...components,
+              [componentId]: { ...components[componentId], props: { ...components[componentId].props, [propName]: newVal } }
+            };
+            this.render();
+          }
+        });
+      });
+
+      return Object.keys(components[componentId].props).map(propName => {
+        return kebabCase(propName);
+      });
+    }
+
+    connectedCallback() {
+      components[componentId].isMounting = true;
+      // upgrade prop if it's already set by a framework for instance
+      Object.keys(components[componentId].props).forEach(prop => {
+        this._upradeProperty(prop);
+      });
+      // render
+      this.render();
+      components[componentId].isMounting = false;
+    }
+
+    attributeChangedCallback(attr, _, updatedVal) {
+      const camelName = camelCase(attr);
+      this[camelName] = updatedVal;
+      components[componentId].props[camelName] = updatedVal;
+    }
+
+    _upradeProperty(prop) {
+      let value = this[prop];
+      delete this[prop];
+      this[prop] = value;
+    }
+
+    render() {
+      currentComponentId = componentId;
+      const template = this.template();
+      const innerHTML =
+        typeof template === "string" ? template : template.string;
+      emerj.merge(this._shadowRoot, innerHTML, {}, template.events);
+    }
+  }
+
+  return Element;
+}
+
+/*
 export default function Customel({
   mode = "open",
   props = {},
@@ -178,4 +329,7 @@ export default function Customel({
     }
   }
   return Component;
+
 }
+
+*/

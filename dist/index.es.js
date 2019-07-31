@@ -196,6 +196,11 @@ const emerj = {
 function typeOf(value) {
   return Object.prototype.toString.call(value).slice(8, -1).toLowerCase();
 }
+function sanitizeHTML(string) {
+  var temp = document.createElement("div");
+  temp.textContent = string;
+  return temp.innerHTML;
+}
 function uuid() {
   return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }
@@ -208,25 +213,28 @@ function kebabCase(str) {
 function camelCase(str) {
   return str.replace(/_/g, (_, index) => index === 0 ? _ : "-").replace(/(?:^\w|[A-Z]|\b\w)/g, (letter, index) => index === 0 ? letter.toLowerCase() : letter.toUpperCase()).replace(invalidChars, "");
 } // Typecast attributes
+function onChange(object, onChange) {
+  const handler = {
+    get(target, property, receiver) {
+      try {
+        return new Proxy(target[property], handler);
+      } catch (err) {
+        return Reflect.get(target, property, receiver);
+      }
+    },
 
-function typeCast(value, type) {
-  if (type === "boolean") {
-    if (value === "true" || value === "" || value === true) {
-      return true;
-    } else {
-      return false;
+    defineProperty(target, property, descriptor) {
+      onChange(descriptor);
+      return Reflect.defineProperty(target, property, descriptor);
+    },
+
+    deleteProperty(target, property) {
+      onChange();
+      return Reflect.deleteProperty(target, property);
     }
-  }
 
-  if (type === "number") {
-    return parseInt(value);
-  }
-
-  if (type === "string") {
-    return String(value);
-  }
-
-  return value;
+  };
+  return new Proxy(object, handler);
 }
 
 function html(parts, ...args) {
@@ -283,6 +291,16 @@ function html(parts, ...args) {
       };
     }
 
+    if (typeOf(arg) === "string") {
+      const sanitizedHTML = sanitizeHTML(arg);
+      return {
+        events: { ...acc.events,
+          ...arg.events
+        },
+        string: acc.string + sanitizedHTML + part
+      };
+    }
+
     return {
       events: { ...acc.events
       },
@@ -295,7 +313,149 @@ function html(parts, ...args) {
   return template;
 }
 
-function Customel({
+let components = {};
+let componentCount = 0;
+let currentComponentId = 0; // export tagged template literal
+
+const html$1 = html; // on mounted
+
+function onMounted(callback) {
+  const component = components[currentComponentId];
+  if (component.isMounting) return callback();
+  return;
+} // function to declare a property
+
+function prop(name, value) {
+  const component = components[currentComponentId];
+  const camelName = camelCase(name);
+
+  if (component.props[camelName] !== undefined) {
+    return component.props[camelName];
+  } else {
+    component.props[camelName] = value;
+    return component.props[camelName];
+  }
+} // function to declare a value
+
+function value(val) {
+  const component = components[currentComponentId];
+  const valueCount = component.valuesCounter;
+  const finalAmountofValues = component.finalAmountofValues;
+  component.valuesCounter++;
+
+  if (!finalAmountofValues) {
+    component.values[valueCount] = onChange({
+      value: val
+    }, newVal => {
+      console.log('changed');
+
+      if (component.this) {
+        // TODO: Do some async magic here?
+        setTimeout(() => {
+          component.this.render();
+        }, 0);
+      }
+    });
+    return component.values[valueCount];
+  }
+
+  return component.values[valueCount % finalAmountofValues];
+}
+function Component(template) {
+  // save a refernece to the component count
+  const componentId = componentCount;
+  currentComponentId = componentId; // initialize component with empty values
+
+  components = { ...components,
+    [componentId]: {
+      this: null,
+      props: {},
+      values: [],
+      valuesCounter: 0,
+      finalAmountofValues: null,
+      isMounting: false
+    }
+  };
+  componentCount++;
+  template();
+  components[componentId].finalAmountofValues = components[componentId].valuesCounter;
+
+  class Element extends HTMLElement {
+    constructor() {
+      super();
+      this._shadowRoot = this.attachShadow({
+        mode: "open"
+      });
+      this._upradeProperty = this._upradeProperty.bind(this);
+      this.html = html$1.bind(this);
+      this.template = template.bind(this);
+      components[componentId].this = this;
+      this.render = this.render.bind(this);
+    }
+
+    static get observedAttributes() {
+      Object.keys(components[componentId].props).forEach(propName => {
+        Object.defineProperty(this.prototype, propName, {
+          configurable: true,
+
+          get() {
+            return components[componentId].props[propName];
+          },
+
+          set(newVal) {
+            components = { ...components,
+              [componentId]: { ...components[componentId],
+                props: { ...components[componentId].props,
+                  [propName]: newVal
+                }
+              }
+            };
+            this.render();
+          }
+
+        });
+      });
+      return Object.keys(components[componentId].props).map(propName => {
+        return kebabCase(propName);
+      });
+    }
+
+    connectedCallback() {
+      components[componentId].isMounting = true; // upgrade prop if it's already set by a framework for instance
+
+      Object.keys(components[componentId].props).forEach(prop => {
+        this._upradeProperty(prop);
+      }); // render
+
+      this.render();
+      components[componentId].isMounting = false;
+    }
+
+    attributeChangedCallback(attr, _, updatedVal) {
+      const camelName = camelCase(attr);
+      this[camelName] = updatedVal;
+      components[componentId].props[camelName] = updatedVal;
+    }
+
+    _upradeProperty(prop) {
+      let value = this[prop];
+      delete this[prop];
+      this[prop] = value;
+    }
+
+    render() {
+      currentComponentId = componentId;
+      const template = this.template();
+      const innerHTML = typeof template === "string" ? template : template.string;
+      emerj.merge(this._shadowRoot, innerHTML, {}, template.events);
+    }
+
+  }
+
+  return Element;
+}
+/*
+export default function Customel({
   mode = "open",
   props = {},
   state = {},
@@ -309,42 +469,41 @@ function Customel({
 }) {
   class Component extends HTMLElement {
     constructor() {
-      super(); // props
+      super();
 
-      this.props = { ...props
-      };
+      // props
+      this.props = { ...props };
       this._propTypes = {};
       this._initProps = this._initProps.bind(this);
       this.propChanged = propChanged.bind(this);
+      this._initProps();
 
-      this._initProps(); // state
-
-
-      this.state = { ...state
-      };
+      // state
+      this.state = { ...state };
       this.setState = this.setState.bind(this);
-      this.stateChanged = stateChanged.bind(this); // styles
+      this.stateChanged = stateChanged.bind(this);
 
-      this._styles = styles.bind(this); // actions
+      // styles
+      this._styles = styles.bind(this);
 
-      this.actions = { ...actions
-      };
+      // actions
+      this.actions = { ...actions };
       this._initActions = this._initActions.bind(this);
+      this._initActions();
 
-      this._initActions(); // temaplte
-
-
-      this._shadowRoot = this.attachShadow({
-        mode
-      });
+      // temaplte
+      this._shadowRoot = this.attachShadow({ mode });
       this._html = html.bind(this);
       this._template = template.bind(this);
-      this.render = this.render.bind(this); // mounted
+      this.render = this.render.bind(this);
 
-      this.mounted = mounted.bind(this); // updated
+      // mounted
+      this.mounted = mounted.bind(this);
 
-      this.updated = updated.bind(this); // emit
+      // updated
+      this.updated = updated.bind(this);
 
+      // emit
       this.emit = this.emit.bind(this);
     }
 
@@ -352,9 +511,11 @@ function Customel({
       Object.keys(this.props).map(p => {
         // set the proptype
         const type = typeOf(this.props[p]);
-        this._propTypes[p] = type; // either get value from attrs, or from default prop
+        this._propTypes[p] = type;
 
-        const value = this.getAttribute(p) || this.hasAttribute(p) || this.props[p];
+        // either get value from attrs, or from default prop
+        const value =
+          this.getAttribute(p) || this.hasAttribute(p) || this.props[p];
         this.props[p] = typeCast(value, type);
       });
     }
@@ -380,29 +541,28 @@ function Customel({
         // define a get and set for each prop on the prototype
         Object.defineProperty(this.prototype, prop, {
           configurable: true,
-
           get() {
             return this.props[prop];
           },
-
           set(newVal) {
             // TODO: Do a deep compare to avoid rerender on equal objects and arrays
             const oldVal = this.props[prop];
-            const propType = this._propTypes[prop]; // only rerender and set attriutes if value is new
+            const propType = this._propTypes[prop];
 
+            // only rerender and set attriutes if value is new
             if (newVal !== oldVal) {
               // set the new value
-              this.props[prop] = newVal; // rerender and notify about the change
-
+              this.props[prop] = newVal;
+              // rerender and notify about the change
               this.render();
               this.propChanged(prop, oldVal, newVal);
-            } // only reflect attr if type is primitive
+            }
 
-
+            // only reflect attr if type is primitive
             if (typeof newVal !== "object") {
-              const attr = kebabCase(prop); // set attributes and attributeChangedCallback will rerender for us
-
-              if (newVal === (false)) {
+              const attr = kebabCase(prop);
+              // set attributes and attributeChangedCallback will rerender for us
+              if (newVal === (null || false)) {
                 this.removeAttribute(attr);
               } else if (newVal === true) {
                 this.setAttribute(attr, "");
@@ -413,9 +573,9 @@ function Customel({
               }
             }
           }
-
         });
       });
+
       return Object.keys(props).map(propName => {
         return kebabCase(propName);
       });
@@ -425,17 +585,22 @@ function Customel({
       // upgrade prop if it's already set by a framework for instance
       Object.keys(this.props).forEach(prop => {
         this._upradeProperty(prop);
-      }); // render
+      });
 
-      this.render(); // fire mounted hook
+      // render
+      this.render();
 
+      // fire mounted hook
       this.mounted();
     }
 
     attributeChangedCallback(attr, _, updatedVal) {
       const propName = camelCase(attr);
       const oldVal = this.props[propName];
-      const newVal = typeCast(updatedVal || this.hasAttribute(attr), this._propTypes[propName]);
+      const newVal = typeCast(
+        updatedVal || this.hasAttribute(attr),
+        this._propTypes[propName]
+      );
 
       if (oldVal !== newVal) {
         // set new value – triggers the setter
@@ -445,8 +610,8 @@ function Customel({
 
     render() {
       const template = this._template(this._html);
-
-      const innerHTML = typeof template === "string" ? template : template.string;
+      const innerHTML =
+        typeof template === "string" ? template : template.string;
       const result = this._html`<style>${this._styles()}</style>${innerHTML}`;
       emerj.merge(this._shadowRoot, result.string, {}, template.events);
       this.updated();
@@ -454,25 +619,21 @@ function Customel({
 
     setState(newState) {
       const oldState = this.state;
-      this.state = { ...oldState,
-        ...newState
-      };
-      this.stateChanged({ ...oldState
-      }, { ...this.state
-      });
+      this.state = { ...oldState, ...newState };
+      this.stateChanged({ ...oldState }, { ...this.state });
       this.render();
     }
 
     emit(name, data) {
-      this.dispatchEvent(new CustomEvent(name, {
-        detail: data,
-        bubbles: false
-      }));
+      this.dispatchEvent(
+        new CustomEvent(name, { detail: data, bubbles: false })
+      );
     }
-
   }
-
   return Component;
+
 }
 
-export default Customel;
+*/
+
+export { html$1 as html, onMounted, prop, value, Component };

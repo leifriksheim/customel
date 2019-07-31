@@ -12,6 +12,8 @@
     "dist"
   ],
   "scripts": {
+    "start": "npm run dev",
+    "test": "jest",
     "publish": "np",
     "prepublish": "run-s clean && run-s build:*",
     "clean": "rimraf dist",
@@ -20,6 +22,7 @@
     "build:es": "NODE_ENV=es rollup -c",
     "build:iife": "NODE_ENV=iife rollup -c",
     "build:min": "uglifyjs dist/index.js -c -m -o dist/index.min.js",
+    "dev:server": "python -m SimpleHTTPServer 8080",
     "dev:es": "NODE_ENV=es rollup -c --watch",
     "dev:iife": "NODE_ENV=iife rollup -c --watch",
     "precommit": "lint-staged"
@@ -28,6 +31,7 @@
     "@babel/core": "^7.3.4",
     "@babel/plugin-external-helpers": "^7.0.0",
     "@babel/preset-env": "^7.3.4",
+    "jest": "^24.8.0",
     "np": "^4.0.2",
     "npm-run-all": "^4.1.5",
     "rollup": "^1.2.3",
