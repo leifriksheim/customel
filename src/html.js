@@ -18,9 +18,7 @@ export function html(parts, ...args) {
       }
 
       if (typeOf(arg) === "function") {
-        // hash the function string to make an id
         const id = uuid();
-
         return {
           events: { ...acc.events, [id]: arg },
           string: acc.string + id + part

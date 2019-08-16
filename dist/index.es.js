@@ -1,18 +1,4 @@
 const emerj = {
-  bindEvent(elem, eventAttr, event) {
-    const eventType = eventAttr.slice(2).toLowerCase();
-    elem.__handlers = elem.__handlers || {};
-    const existingEvent = elem.__handlers[eventType];
-
-    if (existingEvent) {
-      elem.removeEventListener(eventType, existingEvent);
-    }
-
-    elem.__handlers[eventType] = event;
-    elem.addEventListener(eventType, elem.__handlers[eventType]);
-    elem.removeAttribute(eventAttr);
-  },
-
   attrs(elem) {
     if (!elem.attributes) return {};
     const attrs = {};
@@ -36,41 +22,43 @@ const emerj = {
     return map;
   },
 
+  walkAndAddProps(node, events) {
+    const treeWalker = document.createTreeWalker(node, NodeFilter.SHOW_ELEMENT);
+
+    while (treeWalker.nextNode()) {
+      const currentNode = treeWalker.currentNode;
+      const currentAttrs = this.attrs(currentNode);
+
+      for (const attr in currentAttrs) {
+        if (attr in currentNode) {
+          if (attr.startsWith('on')) {
+            currentNode.addEventListener(attr.slice(2), events[currentAttrs[attr]]);
+            currentNode.removeAttribute(attr);
+          } else {
+            currentNode[attr] = currentAttrs[attr];
+          }
+        }
+      }
+    }
+  },
+
   merge(base, modified, opts, events) {
-    /* Merge any differences between base and modified back into base.
-     *
-     * Operates only the children nodes, and does not change the root node or its
-     * attributes.
-     *
-     * Conceptually similar to React's reconciliation algorithm:
-     * https://facebook.github.io/react/docs/reconciliation.html
-     *
-     * I haven't thoroughly tested performance to compare to naive DOM updates (i.e.
-     * just updating the entire DOM from a string using .innerHTML), but some quick
-     * tests on a basic DOMs were twice as fast -- so at least it's not slower in
-     * a simple scenario -- and it's definitely "fast enough" for responsive UI and
-     * even smooth animation.
-     *
-     * The real advantage for me is not so much performance, but that state & identity
-     * of existing elements is preserved -- text typed into an <input>, an open
-     * <select> dropdown, scroll position, ad-hoc attached events, canvas paint, etc,
-     * are preserved as long as an element's identity remains.
-     *
-     * See https://korynunn.wordpress.com/2013/03/19/the-dom-isnt-slow-you-are/
-     */
     opts = opts || {};
 
-    opts.key = opts.key || (node => node.id);
+    opts.key = opts.key || (node => node.id); // If there's no content in the base, it we need to populate the
+    // node
 
-    if (typeof modified === "string") {
-      const html = modified; // Make sure the parent element of the provided HTML is of the same type as
-      // `base`'s parent. This matters when the HTML contains fragments that are
-      // only valid inside certain elements, eg <td>s, which must have a <tr>
-      // parent.
 
-      modified = document.createElement(base.tagName);
-      modified.innerHTML = html;
-    } // Naively recurse into the children, if any, replacing or updating new
+    if (!base.childNodes.length) {
+      const html = modified;
+      base.innerHTML = html;
+      this.walkAndAddProps(base, events);
+      return;
+    }
+
+    const html = modified;
+    modified = document.createElement('div');
+    modified.innerHTML = html; // Naively recurse into the children, if any, replacing or updating new
     // elements that are in the same position as old, deleting trailing elements
     // when the new list contains fewer children, or appending new elements if
     // it contains more children.
@@ -78,7 +66,6 @@ const emerj = {
     // For re-ordered children, the `id` attribute can be used to preserve identity.
     // Loop through .childNodes, not just .children, so we compare text nodes (and
     // comment nodes, fwiw) too.
-
 
     const nodesByKey = {
       old: this.nodesByKey(base, opts.key),
@@ -91,15 +78,7 @@ const emerj = {
 
       if (idx >= base.childNodes.length) {
         // It's a new node. Add event listeners if any and, append it.
-        const newAttrs = this.attrs(newNode);
-
-        for (const attr in newAttrs) {
-          // add event listeners
-          if (attr.startsWith("on")) {
-            this.bindEvent(newNode, attr, events[newAttrs[attr]]);
-          }
-        }
-
+        this.walkAndAddProps(newNode, events);
         base.appendChild(newNode);
         continue;
       }
@@ -122,28 +101,7 @@ const emerj = {
 
       if (baseNode.nodeType !== newNode.nodeType || baseNode.tagName !== newNode.tagName) {
         // Completely different node types. Just update the whole subtree, like React does.
-        const newAttrs = this.attrs(newNode);
-
-        for (const attr in newAttrs) {
-          // add event listeners
-          if (attr.startsWith("on")) {
-            this.bindEvent(newNode, attr, events[newAttrs[attr]]);
-          }
-        }
-
-        const allNodes = baseNode.querySelectorAll("*");
-
-        for (const node in allNodes) {
-          const nodeAttrs = this.attrs(node);
-
-          for (const attr in nodeAttrs) {
-            // add event listeners
-            if (attr.startsWith("on")) {
-              this.bindEvent(node, attr, events[newAttrs[attr]]);
-            }
-          }
-        }
-
+        this.walkAndAddProps(newNode, events);
         base.replaceChild(newNode, baseNode);
       } else if ([Node.TEXT_NODE, Node.COMMENT_NODE].indexOf(baseNode.nodeType) >= 0) {
         // This is the terminating case of the merge() recursion.
@@ -166,16 +124,19 @@ const emerj = {
         }
 
         for (const attr in attrs.new) {
-          // Add and update any new or modified attributes.
-          if (attr in attrs.base && attrs.base[attr] === attrs.new[attr]) continue; // add event listeners
+          const hasProperty = attr in baseNode; // Add and update any new or modified attributes.
 
-          if (attr.startsWith("on")) {
-            this.bindEvent(baseNode, attr, events[attrs.new[attr]]); // contine so we don't set the attribute
-
+          if (attr in attrs.base && attrs.base[attr] === attrs.new[attr] && !hasProperty) {
             continue;
-          }
+          } // check if node has property, set it as property and not attribute
 
-          baseNode.setAttribute(attr, attrs.new[attr]);
+
+          if (hasProperty) {
+            baseNode.removeAttribute(attr);
+            baseNode[attr] = attr.startsWith('on') ? events[attrs.new[attr]] : attrs.new[attr];
+          } else {
+            baseNode.setAttribute(attr, attrs.new[attr]);
+          }
         } // Now, recurse into the children. If the only children are text, this will
         // be the final recursion on this node.
 
@@ -191,6 +152,100 @@ const emerj = {
   }
 
 };
+
+// Simple JavaScript Templating
+// Paul Miller (http://paulmillr.com)
+// http://underscorejs.org
+// (c) 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+// By default, Underscore uses ERB-style template delimiters, change the
+// following template settings to use alternative delimiters.
+var settings = {
+  evaluate: /<%([\s\S]+?)%>/g,
+  interpolate: /<%=([\s\S]+?)%>/g,
+  escape: /<%-([\s\S]+?)%>/g
+}; // When customizing `templateSettings`, if you don't want to define an
+// string literal.
+
+var escapes = {
+  "'": "'",
+  "\\": "\\",
+  "\r": "r",
+  "\n": "n",
+  "\t": "t",
+  "\u2028": "u2028",
+  "\u2029": "u2029"
+};
+var escaper = /\\|'|\r|\n|\t|\u2028|\u2029/g; // List of HTML entities for escaping.
+
+var htmlEntities = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#x27;"
+};
+var entityRe = new RegExp("[&<>\"']", "g");
+
+var escapeExpr = function (string) {
+  if (string == null) return "";
+  return ("" + string).replace(entityRe, function (match) {
+    return htmlEntities[match];
+  });
+};
+
+var counter = 0; // JavaScript micro-templating, similar to John Resig's implementation.
+// Underscore templating handles arbitrary delimiters, preserves whitespace,
+// and correctly escapes quotes within interpolated code.
+
+function tmpl(text, data) {
+  var render; // Combine delimiters into one regular expression via alternation.
+
+  var matcher = new RegExp([(settings.escape).source, (settings.interpolate).source, (settings.evaluate).source].join("|") + "|$", "g"); // Compile the template source, escaping string literals appropriately.
+
+  var index = 0;
+  var source = "__p+='";
+  text.replace(matcher, function (match, escape, interpolate, evaluate, offset) {
+    source += text.slice(index, offset).replace(escaper, function (match) {
+      return "\\" + escapes[match];
+    });
+
+    if (escape) {
+      source += "'+\n((__t=(" + escape + "))==null?'':escapeExpr(__t))+\n'";
+    }
+
+    if (interpolate) {
+      source += "'+\n((__t=(" + interpolate + "))==null?'':__t)+\n'";
+    }
+
+    if (evaluate) {
+      source += "';\n" + evaluate + "\n__p+='";
+    }
+
+    index = offset + match.length;
+    return match;
+  });
+  source += "';\n"; // If a variable is not specified, place data values in local scope.
+
+  source = "with(obj||{}){\n" + source + "}\n";
+  source = "var __t,__p='',__j=Array.prototype.join," + "print=function(){__p+=__j.call(arguments,'');};\n" + source + "return __p;\n//# sourceURL=/microtemplates/source[" + counter++ + "]";
+
+  try {
+    render = new Function("obj", "escapeExpr", source);
+  } catch (e) {
+    e.source = source;
+    throw e;
+  }
+
+  if (data) return render(data, escapeExpr);
+
+  var template = function (data) {
+    return render.call(this, data, escapeExpr);
+  }; // Provide the compiled function source as a convenience for precompilation.
+
+
+  template.source = "function(" + ("obj") + "){\n" + source + "}";
+  return template;
+}
 
 // Return the true type of value
 function typeOf(value) {
@@ -216,6 +271,12 @@ function camelCase(str) {
 function onChange(object, onChange) {
   const handler = {
     get(target, property, receiver) {
+      const desc = Object.getOwnPropertyDescriptor(target, property);
+
+      if (desc && !desc.writable && !desc.configurable) {
+        return Reflect.get(target, property, receiver);
+      }
+
       try {
         return new Proxy(target[property], handler);
       } catch (err) {
@@ -257,7 +318,6 @@ function html(parts, ...args) {
     }
 
     if (typeOf(arg) === "function") {
-      // hash the function string to make an id
       const id = uuid();
       return {
         events: { ...acc.events,
@@ -323,6 +383,12 @@ function onMounted(callback) {
   const component = components[currentComponentId];
   if (component.isMounting) return callback();
   return;
+} // on mounted
+
+function onUnmounted(callback) {
+  const component = components[currentComponentId];
+  if (component.isUnmounting) return callback();
+  return;
 } // function to declare a property
 
 function prop(name, value) {
@@ -346,9 +412,7 @@ function value(val) {
   if (!finalAmountofValues) {
     component.values[valueCount] = onChange({
       value: val
-    }, newVal => {
-      console.log('changed');
-
+    }, () => {
       if (component.this) {
         // TODO: Do some async magic here?
         setTimeout(() => {
@@ -373,7 +437,8 @@ function Component(template) {
       values: [],
       valuesCounter: 0,
       finalAmountofValues: null,
-      isMounting: false
+      isMounting: false,
+      isUnmounting: false
     }
   };
   componentCount++;
@@ -431,6 +496,12 @@ function Component(template) {
       components[componentId].isMounting = false;
     }
 
+    disconnectedCallback() {
+      components[componentId].isUnmounting = true;
+      this.render();
+      components[componentId].isUnmounting = false;
+    }
+
     attributeChangedCallback(attr, _, updatedVal) {
       const camelName = camelCase(attr);
       this[camelName] = updatedVal;
@@ -447,6 +518,10 @@ function Component(template) {
       currentComponentId = componentId;
       const template = this.template();
       const innerHTML = typeof template === "string" ? template : template.string;
+      const test = tmpl(`<div><%= data %></div>`);
+      console.log(test({
+        data: ["halla", "hei"]
+      }));
       emerj.merge(this._shadowRoot, innerHTML, {}, template.events);
     }
 
@@ -636,4 +711,4 @@ export default function Customel({
 
 */
 
-export { html$1 as html, onMounted, prop, value, Component };
+export { html$1 as html, onMounted, onUnmounted, prop, value, Component };

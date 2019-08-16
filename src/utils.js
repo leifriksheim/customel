@@ -67,6 +67,13 @@ export function typeCast(value, type) {
 export function onChange(object, onChange) {
   const handler = {
     get(target, property, receiver) {
+
+      const desc = Object.getOwnPropertyDescriptor(target, property);
+
+      if (desc && !desc.writable && !desc.configurable) {
+        return Reflect.get(target, property, receiver)
+      }
+
       try {
         return new Proxy(target[property], handler);
       } catch (err) {

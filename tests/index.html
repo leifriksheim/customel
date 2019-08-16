@@ -6,18 +6,51 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Document</title>
     <script type="module">
-      import { html, prop, value, onMounted, Component } from "../dist/index.es.js";
-
-      function increment(count) {
-        return count.value++;
-      }
+      import {
+        html,
+        prop,
+        value,
+        onMounted,
+        onUnmounted,
+        Component
+      } from "../dist/index.es.js";
 
       function MyElement() {
-        const count = value(0);
+        const todos = value(["C", "B", "A", "K", "L"]);
+        const input = value("");
+        const checked = value(false);
+
+        const sortedTodos = () => {
+          return todos.value.concat().sort();
+        };
+
+        const addTodo = () => {
+          todos.value.push(input.value);
+          input.value = "";
+        };
+
+        const removeTodo = i => todos.value.splice(i, 1);
+        const onInput = e => (input.value = e.target.value);
+        const onChange = e => (checked.value = e.target.checked);
 
         return html`
-          ${count.value}
-          <button onclick="${() => increment(count)}">Button</button>
+          <input value="${input.value}" oninput="${onInput}" type="text" />
+          <input
+            checked="${checked.value}"
+            onchange="${onChange}"
+            type="checkbox"
+          />
+          <button onclick="${addTodo}">Klikk</button>
+          <ul>
+            ${sortedTodos().map(
+              (todo, i) => html`
+                <li>
+                  <h3>${todo}</h3>
+                  <button onclick="${() => removeTodo(i)}">Remove</button>
+                </li>
+              `
+            )}
+          </ul>
         `;
       }
 

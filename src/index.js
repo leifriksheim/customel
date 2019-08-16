@@ -1,9 +1,10 @@
 import emerj from "./emerj.js";
-import { typeOf, onChange, kebabCase, camelCase, typeCast } from "./utils.js";
+import tmpl from "./tmpl.js";
+import { onChange, kebabCase, camelCase } from "./utils.js";
 
 import { html as htmlTemplateLiteral } from "./html.js";
 
-let components = {}
+let components = {};
 let componentCount = 0;
 let currentComponentId = 0;
 
@@ -12,17 +13,24 @@ export const html = htmlTemplateLiteral;
 
 // on mounted
 export function onMounted(callback) {
-
-  const component = components[currentComponentId]
+  const component = components[currentComponentId];
 
   if (component.isMounting) return callback();
 
   return;
 }
 
+// on mounted
+export function onUnmounted(callback) {
+  const component = components[currentComponentId];
+
+  if (component.isUnmounting) return callback();
+
+  return;
+}
+
 // function to declare a property
 export function prop(name, value) {
-
   const component = components[currentComponentId];
 
   const camelName = camelCase(name);
@@ -37,7 +45,6 @@ export function prop(name, value) {
 
 // function to declare a value
 export function value(val) {
-
   const component = components[currentComponentId];
   const valueCount = component.valuesCounter;
   const finalAmountofValues = component.finalAmountofValues;
@@ -45,10 +52,8 @@ export function value(val) {
   component.valuesCounter++;
 
   if (!finalAmountofValues) {
-    component.values[valueCount] = onChange({ value: val }, newVal => {
-      console.log('changed')
+    component.values[valueCount] = onChange({ value: val }, () => {
       if (component.this) {
-
         // TODO: Do some async magic here?
         setTimeout(() => {
           component.this.render();
@@ -62,7 +67,6 @@ export function value(val) {
 }
 
 export function Component(template) {
-
   // save a refernece to the component count
   const componentId = componentCount;
   currentComponentId = componentId;
@@ -70,21 +74,30 @@ export function Component(template) {
   // initialize component with empty values
   components = {
     ...components,
-    [componentId]: { this: null, props: {}, values: [], valuesCounter: 0, finalAmountofValues: null, isMounting: false  }
+    [componentId]: {
+      this: null,
+      props: {},
+      values: [],
+      valuesCounter: 0,
+      finalAmountofValues: null,
+      isMounting: false,
+      isUnmounting: false
+    }
   };
 
   componentCount++;
 
   template();
 
-  components[componentId].finalAmountofValues = components[componentId].valuesCounter;
+  components[componentId].finalAmountofValues =
+    components[componentId].valuesCounter;
 
   class Element extends HTMLElement {
     constructor() {
       super();
 
       this._shadowRoot = this.attachShadow({ mode: "open" });
-      this._upradeProperty = this._upradeProperty.bind(this)
+      this._upradeProperty = this._upradeProperty.bind(this);
 
       this.html = html.bind(this);
 
@@ -105,7 +118,10 @@ export function Component(template) {
           set(newVal) {
             components = {
               ...components,
-              [componentId]: { ...components[componentId], props: { ...components[componentId].props, [propName]: newVal } }
+              [componentId]: {
+                ...components[componentId],
+                props: { ...components[componentId].props, [propName]: newVal }
+              }
             };
             this.render();
           }
@@ -128,6 +144,12 @@ export function Component(template) {
       components[componentId].isMounting = false;
     }
 
+    disconnectedCallback() {
+      components[componentId].isUnmounting = true;
+      this.render();
+      components[componentId].isUnmounting = false;
+    }
+
     attributeChangedCallback(attr, _, updatedVal) {
       const camelName = camelCase(attr);
       this[camelName] = updatedVal;
@@ -145,6 +167,8 @@ export function Component(template) {
       const template = this.template();
       const innerHTML =
         typeof template === "string" ? template : template.string;
+      const test = tmpl(`<div><%= data %></div>`);
+      console.log(test({ data: ["halla", "hei"] }));
       emerj.merge(this._shadowRoot, innerHTML, {}, template.events);
     }
   }

@@ -52,5 +52,7 @@
     "alternative",
     "template",
     "literals"
-  ]
+  ],
+  "dependencies": {
+  }
 }
