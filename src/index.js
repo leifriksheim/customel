@@ -1,8 +1,10 @@
 import emerj from "./emerj.js";
-import { typeOf, kebabCase, camelCase, typeCast } from "./utils.js";
+import { typeOf, kebabCase, camelCase, typeCast, onChange } from "./utils.js";
 import { html } from "./html.js";
 
-export default function Customel({
+export { html };
+
+export function Component({
   mode = "open",
   props = {},
   state = {},
@@ -10,7 +12,6 @@ export default function Customel({
   mounted = () => {},
   updated = () => {},
   propChanged = () => {},
-  stateChanged = () => {},
   template = () => {},
   styles = () => ""
 }) {
@@ -27,8 +28,8 @@ export default function Customel({
 
       // state
       this.state = { ...state };
-      this.setState = this.setState.bind(this);
-      this.stateChanged = stateChanged.bind(this);
+      this._initState = this._initState.bind(this);
+      this._initState();
 
       // styles
       this._styles = styles.bind(this);
@@ -64,6 +65,14 @@ export default function Customel({
         const value =
           this.getAttribute(p) || this.hasAttribute(p) || this.props[p];
         this.props[p] = typeCast(value, type);
+      });
+    }
+
+    _initState() {
+      this.state = onChange(this.state, () => {
+        setTimeout(() => {
+          this.render();
+        }, 0);
       });
     }
 
@@ -156,19 +165,16 @@ export default function Customel({
     }
 
     render() {
-      const template = this._template(this._html);
+      const template = this._template({
+        actions: this.actions,
+        props: this.props,
+        state: this.state
+      });
       const innerHTML =
         typeof template === "string" ? template : template.string;
       const result = this._html`<style>${this._styles()}</style>${innerHTML}`;
       emerj.merge(this._shadowRoot, result.string, {}, template.events);
       this.updated();
-    }
-
-    setState(newState) {
-      const oldState = this.state;
-      this.state = { ...oldState, ...newState };
-      this.stateChanged({ ...oldState }, { ...this.state });
-      this.render();
     }
 
     emit(name, data) {

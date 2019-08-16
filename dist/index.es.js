@@ -1,18 +1,4 @@
 const emerj = {
-  bindEvent(elem, eventAttr, event) {
-    const eventType = eventAttr.slice(2).toLowerCase();
-    elem.__handlers = elem.__handlers || {};
-    const existingEvent = elem.__handlers[eventType];
-
-    if (existingEvent) {
-      elem.removeEventListener(eventType, existingEvent);
-    }
-
-    elem.__handlers[eventType] = event;
-    elem.addEventListener(eventType, elem.__handlers[eventType]);
-    elem.removeAttribute(eventAttr);
-  },
-
   attrs(elem) {
     if (!elem.attributes) return {};
     const attrs = {};
@@ -36,39 +22,43 @@ const emerj = {
     return map;
   },
 
+  walkAndAddProps(node, events) {
+    const treeWalker = document.createTreeWalker(node, NodeFilter.SHOW_ELEMENT);
+
+    while (treeWalker.nextNode()) {
+      const currentNode = treeWalker.currentNode;
+      const currentAttrs = this.attrs(currentNode);
+
+      for (const attr in currentAttrs) {
+        if (attr in currentNode) {
+          if (attr.startsWith("on")) {
+            currentNode.addEventListener(attr.slice(2), events[currentAttrs[attr]]);
+            currentNode.removeAttribute(attr);
+          } else {
+            currentNode[attr] = currentAttrs[attr];
+          }
+        }
+      }
+    }
+  },
+
   merge(base, modified, opts, events) {
-    /* Merge any differences between base and modified back into base.
-     *
-     * Operates only the children nodes, and does not change the root node or its
-     * attributes.
-     *
-     * Conceptually similar to React's reconciliation algorithm:
-     * https://facebook.github.io/react/docs/reconciliation.html
-     *
-     * I haven't thoroughly tested performance to compare to naive DOM updates (i.e.
-     * just updating the entire DOM from a string using .innerHTML), but some quick
-     * tests on a basic DOMs were twice as fast -- so at least it's not slower in
-     * a simple scenario -- and it's definitely "fast enough" for responsive UI and
-     * even smooth animation.
-     *
-     * The real advantage for me is not so much performance, but that state & identity
-     * of existing elements is preserved -- text typed into an <input>, an open
-     * <select> dropdown, scroll position, ad-hoc attached events, canvas paint, etc,
-     * are preserved as long as an element's identity remains.
-     *
-     * See https://korynunn.wordpress.com/2013/03/19/the-dom-isnt-slow-you-are/
-     */
     opts = opts || {};
 
-    opts.key = opts.key || (node => node.id);
+    opts.key = opts.key || (node => node.id); // If there's no content in the base, it we need to populate the
+    // node
+
+
+    if (!base.childNodes.length) {
+      const html = modified;
+      base.innerHTML = html;
+      this.walkAndAddProps(base, events);
+      return;
+    }
 
     if (typeof modified === "string") {
-      const html = modified; // Make sure the parent element of the provided HTML is of the same type as
-      // `base`'s parent. This matters when the HTML contains fragments that are
-      // only valid inside certain elements, eg <td>s, which must have a <tr>
-      // parent.
-
-      modified = document.createElement(base.tagName);
+      const html = modified;
+      modified = document.createElement("div");
       modified.innerHTML = html;
     } // Naively recurse into the children, if any, replacing or updating new
     // elements that are in the same position as old, deleting trailing elements
@@ -91,15 +81,7 @@ const emerj = {
 
       if (idx >= base.childNodes.length) {
         // It's a new node. Add event listeners if any and, append it.
-        const newAttrs = this.attrs(newNode);
-
-        for (const attr in newAttrs) {
-          // add event listeners
-          if (attr.startsWith("on")) {
-            this.bindEvent(newNode, attr, events[newAttrs[attr]]);
-          }
-        }
-
+        this.walkAndAddProps(newNode, events);
         base.appendChild(newNode);
         continue;
       }
@@ -122,28 +104,7 @@ const emerj = {
 
       if (baseNode.nodeType !== newNode.nodeType || baseNode.tagName !== newNode.tagName) {
         // Completely different node types. Just update the whole subtree, like React does.
-        const newAttrs = this.attrs(newNode);
-
-        for (const attr in newAttrs) {
-          // add event listeners
-          if (attr.startsWith("on")) {
-            this.bindEvent(newNode, attr, events[newAttrs[attr]]);
-          }
-        }
-
-        const allNodes = baseNode.querySelectorAll("*");
-
-        for (const node in allNodes) {
-          const nodeAttrs = this.attrs(node);
-
-          for (const attr in nodeAttrs) {
-            // add event listeners
-            if (attr.startsWith("on")) {
-              this.bindEvent(node, attr, events[newAttrs[attr]]);
-            }
-          }
-        }
-
+        this.walkAndAddProps(newNode, events);
         base.replaceChild(newNode, baseNode);
       } else if ([Node.TEXT_NODE, Node.COMMENT_NODE].indexOf(baseNode.nodeType) >= 0) {
         // This is the terminating case of the merge() recursion.
@@ -166,16 +127,19 @@ const emerj = {
         }
 
         for (const attr in attrs.new) {
-          // Add and update any new or modified attributes.
-          if (attr in attrs.base && attrs.base[attr] === attrs.new[attr]) continue; // add event listeners
+          const hasProperty = attr in baseNode; // Add and update any new or modified attributes.
 
-          if (attr.startsWith("on")) {
-            this.bindEvent(baseNode, attr, events[attrs.new[attr]]); // contine so we don't set the attribute
-
+          if (attr in attrs.base && attrs.base[attr] === attrs.new[attr] && !hasProperty) {
             continue;
-          }
+          } // check if node has property, set it as property and not attribute
 
-          baseNode.setAttribute(attr, attrs.new[attr]);
+
+          if (hasProperty) {
+            baseNode.removeAttribute(attr);
+            baseNode[attr] = attr.startsWith("on") ? events[attrs.new[attr]] : attrs.new[attr];
+          } else {
+            baseNode.setAttribute(attr, attrs.new[attr]);
+          }
         } // Now, recurse into the children. If the only children are text, this will
         // be the final recursion on this node.
 
@@ -227,6 +191,35 @@ function typeCast(value, type) {
   }
 
   return value;
+}
+function onChange(object, onChange) {
+  const handler = {
+    get(target, property, receiver) {
+      const desc = Object.getOwnPropertyDescriptor(target, property);
+
+      if (desc && !desc.writable && !desc.configurable) {
+        return Reflect.get(target, property, receiver);
+      }
+
+      try {
+        return new Proxy(target[property], handler);
+      } catch (err) {
+        return Reflect.get(target, property, receiver);
+      }
+    },
+
+    defineProperty(target, property, descriptor) {
+      onChange(descriptor);
+      return Reflect.defineProperty(target, property, descriptor);
+    },
+
+    deleteProperty(target, property) {
+      onChange();
+      return Reflect.deleteProperty(target, property);
+    }
+
+  };
+  return new Proxy(object, handler);
 }
 
 function html(parts, ...args) {
@@ -295,7 +288,7 @@ function html(parts, ...args) {
   return template;
 }
 
-function Customel({
+function Component({
   mode = "open",
   props = {},
   state = {},
@@ -303,7 +296,6 @@ function Customel({
   mounted = () => {},
   updated = () => {},
   propChanged = () => {},
-  stateChanged = () => {},
   template = () => {},
   styles = () => ""
 }) {
@@ -322,8 +314,10 @@ function Customel({
 
       this.state = { ...state
       };
-      this.setState = this.setState.bind(this);
-      this.stateChanged = stateChanged.bind(this); // styles
+      this._initState = this._initState.bind(this);
+
+      this._initState(); // styles
+
 
       this._styles = styles.bind(this); // actions
 
@@ -356,6 +350,14 @@ function Customel({
 
         const value = this.getAttribute(p) || this.hasAttribute(p) || this.props[p];
         this.props[p] = typeCast(value, type);
+      });
+    }
+
+    _initState() {
+      this.state = onChange(this.state, () => {
+        setTimeout(() => {
+          this.render();
+        }, 0);
       });
     }
 
@@ -444,23 +446,16 @@ function Customel({
     }
 
     render() {
-      const template = this._template(this._html);
+      const template = this._template({
+        actions: this.actions,
+        props: this.props,
+        state: this.state
+      });
 
       const innerHTML = typeof template === "string" ? template : template.string;
       const result = this._html`<style>${this._styles()}</style>${innerHTML}`;
       emerj.merge(this._shadowRoot, result.string, {}, template.events);
       this.updated();
-    }
-
-    setState(newState) {
-      const oldState = this.state;
-      this.state = { ...oldState,
-        ...newState
-      };
-      this.stateChanged({ ...oldState
-      }, { ...this.state
-      });
-      this.render();
     }
 
     emit(name, data) {
@@ -475,4 +470,4 @@ function Customel({
   return Component;
 }
 
-export default Customel;
+export { html, Component };

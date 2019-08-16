@@ -20,6 +20,7 @@
     "build:es": "NODE_ENV=es rollup -c",
     "build:iife": "NODE_ENV=iife rollup -c",
     "build:min": "uglifyjs dist/index.js -c -m -o dist/index.min.js",
+    "dev:serve": "python -m SimpleHTTPServer 8080",
     "dev:es": "NODE_ENV=es rollup -c --watch",
     "dev:iife": "NODE_ENV=iife rollup -c --watch",
     "precommit": "lint-staged"
