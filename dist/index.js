@@ -34,7 +34,7 @@ var customel = (function (exports) {
 
         for (const attr in currentAttrs) {
           if (attr in currentNode) {
-            if (attr.startsWith('on')) {
+            if (attr.startsWith("on")) {
               currentNode.addEventListener(attr.slice(2), events[currentAttrs[attr]]);
               currentNode.removeAttribute(attr);
             } else {
@@ -59,9 +59,11 @@ var customel = (function (exports) {
         return;
       }
 
-      const html = modified;
-      modified = document.createElement('div');
-      modified.innerHTML = html; // Naively recurse into the children, if any, replacing or updating new
+      if (typeof modified === "string") {
+        const html = modified;
+        modified = document.createElement("div");
+        modified.innerHTML = html;
+      } // Naively recurse into the children, if any, replacing or updating new
       // elements that are in the same position as old, deleting trailing elements
       // when the new list contains fewer children, or appending new elements if
       // it contains more children.
@@ -69,6 +71,7 @@ var customel = (function (exports) {
       // For re-ordered children, the `id` attribute can be used to preserve identity.
       // Loop through .childNodes, not just .children, so we compare text nodes (and
       // comment nodes, fwiw) too.
+
 
       const nodesByKey = {
         old: this.nodesByKey(base, opts.key),
@@ -136,7 +139,7 @@ var customel = (function (exports) {
 
             if (hasProperty) {
               baseNode.removeAttribute(attr);
-              baseNode[attr] = attr.startsWith('on') ? events[attrs.new[attr]] : attrs.new[attr];
+              baseNode[attr] = attr.startsWith("on") ? events[attrs.new[attr]] : attrs.new[attr];
             } else {
               baseNode.setAttribute(attr, attrs.new[attr]);
             }
@@ -155,100 +158,6 @@ var customel = (function (exports) {
     }
 
   };
-
-  // Simple JavaScript Templating
-  // Paul Miller (http://paulmillr.com)
-  // http://underscorejs.org
-  // (c) 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-  // By default, Underscore uses ERB-style template delimiters, change the
-  // following template settings to use alternative delimiters.
-  var settings = {
-    evaluate: /<%([\s\S]+?)%>/g,
-    interpolate: /<%=([\s\S]+?)%>/g,
-    escape: /<%-([\s\S]+?)%>/g
-  }; // When customizing `templateSettings`, if you don't want to define an
-  // string literal.
-
-  var escapes = {
-    "'": "'",
-    "\\": "\\",
-    "\r": "r",
-    "\n": "n",
-    "\t": "t",
-    "\u2028": "u2028",
-    "\u2029": "u2029"
-  };
-  var escaper = /\\|'|\r|\n|\t|\u2028|\u2029/g; // List of HTML entities for escaping.
-
-  var htmlEntities = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#x27;"
-  };
-  var entityRe = new RegExp("[&<>\"']", "g");
-
-  var escapeExpr = function (string) {
-    if (string == null) return "";
-    return ("" + string).replace(entityRe, function (match) {
-      return htmlEntities[match];
-    });
-  };
-
-  var counter = 0; // JavaScript micro-templating, similar to John Resig's implementation.
-  // Underscore templating handles arbitrary delimiters, preserves whitespace,
-  // and correctly escapes quotes within interpolated code.
-
-  function tmpl(text, data) {
-    var render; // Combine delimiters into one regular expression via alternation.
-
-    var matcher = new RegExp([(settings.escape).source, (settings.interpolate).source, (settings.evaluate).source].join("|") + "|$", "g"); // Compile the template source, escaping string literals appropriately.
-
-    var index = 0;
-    var source = "__p+='";
-    text.replace(matcher, function (match, escape, interpolate, evaluate, offset) {
-      source += text.slice(index, offset).replace(escaper, function (match) {
-        return "\\" + escapes[match];
-      });
-
-      if (escape) {
-        source += "'+\n((__t=(" + escape + "))==null?'':escapeExpr(__t))+\n'";
-      }
-
-      if (interpolate) {
-        source += "'+\n((__t=(" + interpolate + "))==null?'':__t)+\n'";
-      }
-
-      if (evaluate) {
-        source += "';\n" + evaluate + "\n__p+='";
-      }
-
-      index = offset + match.length;
-      return match;
-    });
-    source += "';\n"; // If a variable is not specified, place data values in local scope.
-
-    source = "with(obj||{}){\n" + source + "}\n";
-    source = "var __t,__p='',__j=Array.prototype.join," + "print=function(){__p+=__j.call(arguments,'');};\n" + source + "return __p;\n//# sourceURL=/microtemplates/source[" + counter++ + "]";
-
-    try {
-      render = new Function("obj", "escapeExpr", source);
-    } catch (e) {
-      e.source = source;
-      throw e;
-    }
-
-    if (data) return render(data, escapeExpr);
-
-    var template = function (data) {
-      return render.call(this, data, escapeExpr);
-    }; // Provide the compiled function source as a convenience for precompilation.
-
-
-    template.source = "function(" + ("obj") + "){\n" + source + "}";
-    return template;
-  }
 
   // Return the true type of value
   function typeOf(value) {
@@ -521,10 +430,6 @@ var customel = (function (exports) {
         currentComponentId = componentId;
         const template = this.template();
         const innerHTML = typeof template === "string" ? template : template.string;
-        const test = tmpl(`<div><%= data %></div>`);
-        console.log(test({
-          data: ["halla", "hei"]
-        }));
         emerj.merge(this._shadowRoot, innerHTML, {}, template.events);
       }
 

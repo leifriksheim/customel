@@ -18,13 +18,16 @@ const emerj = {
   },
   walkAndAddProps(node, events) {
     const treeWalker = document.createTreeWalker(node, NodeFilter.SHOW_ELEMENT);
-    while(treeWalker.nextNode()) {
+    while (treeWalker.nextNode()) {
       const currentNode = treeWalker.currentNode;
       const currentAttrs = this.attrs(currentNode);
       for (const attr in currentAttrs) {
         if (attr in currentNode) {
-          if (attr.startsWith('on')) {
-            currentNode.addEventListener(attr.slice(2), events[currentAttrs[attr]]);
+          if (attr.startsWith("on")) {
+            currentNode.addEventListener(
+              attr.slice(2),
+              events[currentAttrs[attr]]
+            );
             currentNode.removeAttribute(attr);
           } else {
             currentNode[attr] = currentAttrs[attr];
@@ -46,9 +49,11 @@ const emerj = {
       return;
     }
 
-    const html = modified;
-    modified = document.createElement('div');
-    modified.innerHTML = html;
+    if (typeof modified === "string") {
+      const html = modified;
+      modified = document.createElement("div");
+      modified.innerHTML = html;
+    }
 
     // Naively recurse into the children, if any, replacing or updating new
     // elements that are in the same position as old, deleting trailing elements
@@ -71,7 +76,7 @@ const emerj = {
 
       if (idx >= base.childNodes.length) {
         // It's a new node. Add event listeners if any and, append it.
-        this.walkAndAddProps(newNode, events)
+        this.walkAndAddProps(newNode, events);
         base.appendChild(newNode);
         continue;
       }
@@ -97,7 +102,7 @@ const emerj = {
         baseNode.tagName !== newNode.tagName
       ) {
         // Completely different node types. Just update the whole subtree, like React does.
-        this.walkAndAddProps(newNode, events)
+        this.walkAndAddProps(newNode, events);
         base.replaceChild(newNode, baseNode);
       } else if (
         [Node.TEXT_NODE, Node.COMMENT_NODE].indexOf(baseNode.nodeType) >= 0
@@ -118,14 +123,20 @@ const emerj = {
         for (const attr in attrs.new) {
           const hasProperty = attr in baseNode;
           // Add and update any new or modified attributes.
-          if (attr in attrs.base && attrs.base[attr] === attrs.new[attr] && !hasProperty) {
+          if (
+            attr in attrs.base &&
+            attrs.base[attr] === attrs.new[attr] &&
+            !hasProperty
+          ) {
             continue;
           }
 
           // check if node has property, set it as property and not attribute
           if (hasProperty) {
             baseNode.removeAttribute(attr);
-            baseNode[attr] = attr.startsWith('on') ? events[attrs.new[attr]]: attrs.new[attr];
+            baseNode[attr] = attr.startsWith("on")
+              ? events[attrs.new[attr]]
+              : attrs.new[attr];
           } else {
             baseNode.setAttribute(attr, attrs.new[attr]);
           }

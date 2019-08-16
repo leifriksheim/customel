@@ -1,5 +1,4 @@
 import emerj from "./emerj.js";
-import tmpl from "./tmpl.js";
 import { onChange, kebabCase, camelCase } from "./utils.js";
 
 import { html as htmlTemplateLiteral } from "./html.js";
@@ -167,8 +166,6 @@ export function Component(template) {
       const template = this.template();
       const innerHTML =
         typeof template === "string" ? template : template.string;
-      const test = tmpl(`<div><%= data %></div>`);
-      console.log(test({ data: ["halla", "hei"] }));
       emerj.merge(this._shadowRoot, innerHTML, {}, template.events);
     }
   }
