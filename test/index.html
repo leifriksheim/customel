@@ -4,34 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <script src="../dist/index.js"></script>
+    <script type="module" src="./my-element.js"></script>
     <title>Document</title>
   </head>
   <body>
-    <my-element> </my-element>
-    <script type="module">
-      import { Component, html } from "../dist/index.es.js";
-
-      customElements.define(
-        "my-element",
-        Component({
-          state: {
-            todos: ["Todo 1", "Todo 2"]
-          },
-          template: ({ state }) =>
-            html`
-              <input oninput=${e => (state.value = e.target.value)} />
-              <ul>
-                ${state.todos.map(
-                  todo =>
-                    html`
-                      <li>${todo}</li>
-                    `
-                )}
-              </ul>
-            `
-        })
-      );
-    </script>
+    <my-element></my-element>
   </body>
 </html>

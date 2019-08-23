@@ -6,6 +6,18 @@ export function typeOf(value) {
     .toLowerCase();
 }
 
+export function applyAttr(el, attr, propValue) {
+  if (propValue === (null || false)) {
+    el.removeAttribute(attr);
+  } else if (propValue === true) {
+    el.setAttribute(attr, "");
+  } else if (propValue === "") {
+    el.removeAttribute(attr);
+  } else {
+    el.setAttribute(attr, propValue);
+  }
+}
+
 export function uuid() {
   return (
     Math.random()

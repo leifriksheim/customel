@@ -1,8 +1,17 @@
 import emerj from "./emerj.js";
-import { typeOf, kebabCase, camelCase, typeCast, onChange } from "./utils.js";
+import {
+  typeOf,
+  kebabCase,
+  camelCase,
+  applyAttr,
+  typeCast,
+  onChange
+} from "./utils.js";
 import { html } from "./html.js";
+import { css } from "./css.js";
 
 export { html };
+export { css };
 
 export function Component({
   mode = "open",
@@ -50,9 +59,6 @@ export function Component({
 
       // updated
       this.updated = updated.bind(this);
-
-      // emit
-      this.emit = this.emit.bind(this);
     }
 
     _initProps() {
@@ -77,9 +83,19 @@ export function Component({
     }
 
     _initActions() {
+      const data = {
+        state: this.state,
+        actions: this.actions,
+        props: this.props
+      };
       // bind actions
       Object.keys(this.actions).map(a => {
-        this.actions[a] = actions[a].bind(this);
+        const boundAction = actions[a].bind(this);
+        function actionWithData(params) {
+          if (!params) return boundAction(data);
+          else return boundAction(params, data);
+        }
+        this.actions[a] = actionWithData;
       });
     }
 
@@ -100,10 +116,13 @@ export function Component({
           get() {
             return this.props[prop];
           },
-          set(newVal) {
+          set(val) {
             // TODO: Do a deep compare to avoid rerender on equal objects and arrays
+            const attr = kebabCase(prop);
             const oldVal = this.props[prop];
             const propType = this._propTypes[prop];
+
+            const newVal = typeCast(val || this.hasAttribute(attr), propType);
 
             // only rerender and set attriutes if value is new
             if (newVal !== oldVal) {
@@ -112,21 +131,6 @@ export function Component({
               // rerender and notify about the change
               this.render();
               this.propChanged(prop, oldVal, newVal);
-            }
-
-            // only reflect attr if type is primitive
-            if (typeof newVal !== "object") {
-              const attr = kebabCase(prop);
-              // set attributes and attributeChangedCallback will rerender for us
-              if (newVal === (null || false)) {
-                this.removeAttribute(attr);
-              } else if (newVal === true) {
-                this.setAttribute(attr, "");
-              } else if (propType === "string" && newVal === "") {
-                this.removeAttribute(attr);
-              } else {
-                this.setAttribute(attr, newVal);
-              }
             }
           }
         });
@@ -150,37 +154,47 @@ export function Component({
       this.mounted();
     }
 
-    attributeChangedCallback(attr, _, updatedVal) {
+    attributeChangedCallback(attr, oldVal, updatedVal) {
       const propName = camelCase(attr);
-      const oldVal = this.props[propName];
-      const newVal = typeCast(
-        updatedVal || this.hasAttribute(attr),
-        this._propTypes[propName]
-      );
+      const hasProp = this.props[propName] ? true : false;
+      const oldPropValue = this.props[propName];
+      const propType = this._propTypes[propName] || null;
 
-      if (oldVal !== newVal) {
-        // set new value – triggers the setter
-        this[propName] = newVal;
+      if (hasProp) {
+        const newPropValue = typeCast(
+          updatedVal || this.hasAttribute(attr),
+          propType
+        );
+
+        if (oldPropValue !== newPropValue) {
+          this[propName] = newPropValue;
+          // only reflect attr if type is primitive
+          if (typeof newPropValue !== "object") {
+            applyAttr(this, attr, newPropValue);
+          }
+        }
+      } else {
+        if (oldVal !== updatedVal) {
+          applyAttr(this, attr, updatedVal);
+        }
       }
     }
 
     render() {
-      const template = this._template({
+      const data = {
         actions: this.actions,
         props: this.props,
         state: this.state
-      });
+      };
+
+      const template = this._template(data);
       const innerHTML =
         typeof template === "string" ? template : template.string;
-      const result = this._html`<style>${this._styles()}</style>${innerHTML}`;
+      const result = this._html`<style>${this._styles(
+        data
+      )}</style>${innerHTML}`;
       emerj.merge(this._shadowRoot, result.string, {}, template.events);
       this.updated();
-    }
-
-    emit(name, data) {
-      this.dispatchEvent(
-        new CustomEvent(name, { detail: data, bubbles: false })
-      );
     }
   }
   return Component;

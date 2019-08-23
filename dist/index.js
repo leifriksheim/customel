@@ -25,6 +25,19 @@ var customel = (function (exports) {
       return map;
     },
 
+    addEvent(el, attr, eventFunction) {
+      const eventName = attr.slice(2);
+      el.__handlers = el.__handlers || {};
+      const isSameFunction = el.__handlers[attr] ? el.__handlers[attr].toString() === eventFunction.toString() : false;
+
+      if (!isSameFunction) {
+        el.removeEventListener(eventName, el.__handlers[attr]);
+        el.addEventListener(eventName, eventFunction);
+      }
+
+      el.removeAttribute(attr);
+    },
+
     walkAndAddProps(node, events) {
       const treeWalker = document.createTreeWalker(node, NodeFilter.SHOW_ELEMENT);
 
@@ -33,13 +46,17 @@ var customel = (function (exports) {
         const currentAttrs = this.attrs(currentNode);
 
         for (const attr in currentAttrs) {
-          if (attr in currentNode) {
-            if (attr.startsWith("on")) {
-              currentNode.addEventListener(attr.slice(2), events[currentAttrs[attr]]);
-              currentNode.removeAttribute(attr);
-            } else {
-              currentNode[attr] = currentAttrs[attr];
-            }
+          const isEvent = attr.startsWith("on");
+
+          if (isEvent) {
+            this.addEvent(currentNode, attr, events[currentAttrs[attr]]);
+          } // if attribute is a property on element, but not an event
+          // set the property
+
+
+          if (attr in currentNode && !isEvent) {
+            currentNode.removeAttribute(attr);
+            currentNode[attr] = currentAttrs[attr];
           }
         }
       }
@@ -52,7 +69,7 @@ var customel = (function (exports) {
       // node
 
 
-      if (!base.childNodes.length) {
+      if (!base.childNodes.length && typeof modified === "string") {
         const html = modified;
         base.innerHTML = html;
         this.walkAndAddProps(base, events);
@@ -134,13 +151,21 @@ var customel = (function (exports) {
 
             if (attr in attrs.base && attrs.base[attr] === attrs.new[attr] && !hasProperty) {
               continue;
+            }
+
+            const isEvent = attr.startsWith("on");
+
+            if (isEvent) {
+              this.addEvent(baseNode, attr, events[attrs.new[attr]]);
             } // check if node has property, set it as property and not attribute
 
 
-            if (hasProperty) {
+            if (hasProperty && !isEvent) {
               baseNode.removeAttribute(attr);
-              baseNode[attr] = attr.startsWith("on") ? events[attrs.new[attr]] : attrs.new[attr];
-            } else {
+              baseNode[attr] = attrs.new[attr];
+            }
+
+            if (!hasProperty && !isEvent) {
               baseNode.setAttribute(attr, attrs.new[attr]);
             }
           } // Now, recurse into the children. If the only children are text, this will
@@ -162,6 +187,17 @@ var customel = (function (exports) {
   // Return the true type of value
   function typeOf(value) {
     return Object.prototype.toString.call(value).slice(8, -1).toLowerCase();
+  }
+  function applyAttr(el, attr, propValue) {
+    if (propValue === (false)) {
+      el.removeAttribute(attr);
+    } else if (propValue === true) {
+      el.setAttribute(attr, "");
+    } else if (propValue === "") {
+      el.removeAttribute(attr);
+    } else {
+      el.setAttribute(attr, propValue);
+    }
   }
   function uuid() {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
@@ -291,6 +327,12 @@ var customel = (function (exports) {
     return template;
   }
 
+  function css(parts, ...args) {
+    return parts.reduce((acc, part, i) => {
+      return acc + part + args[i];
+    }, "");
+  }
+
   function Component({
     mode = "open",
     props = {},
@@ -340,9 +382,7 @@ var customel = (function (exports) {
 
         this.mounted = mounted.bind(this); // updated
 
-        this.updated = updated.bind(this); // emit
-
-        this.emit = this.emit.bind(this);
+        this.updated = updated.bind(this);
       }
 
       _initProps() {
@@ -365,9 +405,20 @@ var customel = (function (exports) {
       }
 
       _initActions() {
-        // bind actions
+        const data = {
+          state: this.state,
+          actions: this.actions,
+          props: this.props
+        }; // bind actions
+
         Object.keys(this.actions).map(a => {
-          this.actions[a] = actions[a].bind(this);
+          const boundAction = actions[a].bind(this);
+
+          function actionWithData(params) {
+            if (!params) return boundAction(data);else return boundAction(params, data);
+          }
+
+          this.actions[a] = actionWithData;
         });
       }
 
@@ -390,10 +441,12 @@ var customel = (function (exports) {
               return this.props[prop];
             },
 
-            set(newVal) {
+            set(val) {
               // TODO: Do a deep compare to avoid rerender on equal objects and arrays
+              const attr = kebabCase(prop);
               const oldVal = this.props[prop];
-              const propType = this._propTypes[prop]; // only rerender and set attriutes if value is new
+              const propType = this._propTypes[prop];
+              const newVal = typeCast(val || this.hasAttribute(attr), propType); // only rerender and set attriutes if value is new
 
               if (newVal !== oldVal) {
                 // set the new value
@@ -401,21 +454,6 @@ var customel = (function (exports) {
 
                 this.render();
                 this.propChanged(prop, oldVal, newVal);
-              } // only reflect attr if type is primitive
-
-
-              if (typeof newVal !== "object") {
-                const attr = kebabCase(prop); // set attributes and attributeChangedCallback will rerender for us
-
-                if (newVal === (false)) {
-                  this.removeAttribute(attr);
-                } else if (newVal === true) {
-                  this.setAttribute(attr, "");
-                } else if (propType === "string" && newVal === "") {
-                  this.removeAttribute(attr);
-                } else {
-                  this.setAttribute(attr, newVal);
-                }
               }
             }
 
@@ -437,35 +475,42 @@ var customel = (function (exports) {
         this.mounted();
       }
 
-      attributeChangedCallback(attr, _, updatedVal) {
+      attributeChangedCallback(attr, oldVal, updatedVal) {
         const propName = camelCase(attr);
-        const oldVal = this.props[propName];
-        const newVal = typeCast(updatedVal || this.hasAttribute(attr), this._propTypes[propName]);
+        const hasProp = this.props[propName] ? true : false;
+        const oldPropValue = this.props[propName];
+        const propType = this._propTypes[propName] || null;
 
-        if (oldVal !== newVal) {
-          // set new value – triggers the setter
-          this[propName] = newVal;
+        if (hasProp) {
+          const newPropValue = typeCast(updatedVal || this.hasAttribute(attr), propType);
+
+          if (oldPropValue !== newPropValue) {
+            this[propName] = newPropValue; // only reflect attr if type is primitive
+
+            if (typeof newPropValue !== "object") {
+              applyAttr(this, attr, newPropValue);
+            }
+          }
+        } else {
+          if (oldVal !== updatedVal) {
+            applyAttr(this, attr, updatedVal);
+          }
         }
       }
 
       render() {
-        const template = this._template({
+        const data = {
           actions: this.actions,
           props: this.props,
           state: this.state
-        });
+        };
+
+        const template = this._template(data);
 
         const innerHTML = typeof template === "string" ? template : template.string;
-        const result = this._html`<style>${this._styles()}</style>${innerHTML}`;
+        const result = this._html`<style>${this._styles(data)}</style>${innerHTML}`;
         emerj.merge(this._shadowRoot, result.string, {}, template.events);
         this.updated();
-      }
-
-      emit(name, data) {
-        this.dispatchEvent(new CustomEvent(name, {
-          detail: data,
-          bubbles: false
-        }));
       }
 
     }
@@ -474,6 +519,7 @@ var customel = (function (exports) {
   }
 
   exports.html = html;
+  exports.css = css;
   exports.Component = Component;
 
   return exports;

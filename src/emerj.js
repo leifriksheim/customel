@@ -16,22 +16,33 @@ const emerj = {
     }
     return map;
   },
+  addEvent(el, attr, eventFunction) {
+    const eventName = attr.slice(2);
+    el.__handlers = el.__handlers || {};
+    const isSameFunction = el.__handlers[attr]
+      ? el.__handlers[attr].toString() === eventFunction.toString()
+      : false;
+    if (!isSameFunction) {
+      el.removeEventListener(eventName, el.__handlers[attr]);
+      el.addEventListener(eventName, eventFunction);
+    }
+    el.removeAttribute(attr);
+  },
   walkAndAddProps(node, events) {
     const treeWalker = document.createTreeWalker(node, NodeFilter.SHOW_ELEMENT);
     while (treeWalker.nextNode()) {
       const currentNode = treeWalker.currentNode;
       const currentAttrs = this.attrs(currentNode);
       for (const attr in currentAttrs) {
-        if (attr in currentNode) {
-          if (attr.startsWith("on")) {
-            currentNode.addEventListener(
-              attr.slice(2),
-              events[currentAttrs[attr]]
-            );
-            currentNode.removeAttribute(attr);
-          } else {
-            currentNode[attr] = currentAttrs[attr];
-          }
+        const isEvent = attr.startsWith("on");
+        if (isEvent) {
+          this.addEvent(currentNode, attr, events[currentAttrs[attr]]);
+        }
+        // if attribute is a property on element, but not an event
+        // set the property
+        if (attr in currentNode && !isEvent) {
+          currentNode.removeAttribute(attr);
+          currentNode[attr] = currentAttrs[attr];
         }
       }
     }
@@ -42,7 +53,7 @@ const emerj = {
 
     // If there's no content in the base, it we need to populate the
     // node
-    if (!base.childNodes.length) {
+    if (!base.childNodes.length && typeof modified === "string") {
       const html = modified;
       base.innerHTML = html;
       this.walkAndAddProps(base, events);
@@ -131,13 +142,19 @@ const emerj = {
             continue;
           }
 
+          const isEvent = attr.startsWith("on");
+
+          if (isEvent) {
+            this.addEvent(baseNode, attr, events[attrs.new[attr]]);
+          }
+
           // check if node has property, set it as property and not attribute
-          if (hasProperty) {
+          if (hasProperty && !isEvent) {
             baseNode.removeAttribute(attr);
-            baseNode[attr] = attr.startsWith("on")
-              ? events[attrs.new[attr]]
-              : attrs.new[attr];
-          } else {
+            baseNode[attr] = attrs.new[attr];
+          }
+
+          if (!hasProperty && !isEvent) {
             baseNode.setAttribute(attr, attrs.new[attr]);
           }
         }
